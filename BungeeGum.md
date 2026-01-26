@@ -1,1 +1,1 @@
-Has the ability of Bungee and Gum.
+Has the ability of Rubber and Gum.
