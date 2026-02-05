@@ -1,23 +1,66 @@
-# Visual Studio
+# =========================================
+# Visual Studio (ALL local IDE files)
+# =========================================
+
 .vs/
 *.suo
+*.user
+*.userosscache
+*.sln.docstates
 DocumentLayout.json
 
-# Build output
-bin/
-obj/
+# Visual Studio caches
+*.vsidx
+*.dtbcache.v2
+*.futdcache.v2
+*.db
+*.db-shm
+*.db-wal
+
+# =========================================
+# Build output (matches your screenshot)
+# =========================================
+
+[Bb]in/
+[Oo]bj/
 **/bin/
 **/obj/
 
-# .NET / MSBuild generated files
-*.cache
-*.cache.json
-*.assets.cache
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+# =========================================
+# MSBuild / .NET generated files
+# =========================================
+
 *.AssemblyInfo.cs
 *.AssemblyInfoInputs.cache
 *.GeneratedMSBuildEditorConfig.editorconfig
-*.sourceLink.json
+*.assets.cache
+*.sourcelink.json
+*.cache
+*.cache.json
 
+# =========================================
+# Visual Studio Code (just in case)
+# =========================================
+
+.vscode/
+
+# =========================================
+# NuGet
+# =========================================
+
+packages/
+*.nupkg
+*.snupkg
+
+# =========================================
 # OS junk
+# =========================================
+
 .DS_Store
 Thumbs.db
+*.log
