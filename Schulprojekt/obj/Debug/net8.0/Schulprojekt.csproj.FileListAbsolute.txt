@@ -24,7 +24,6 @@ D:\Schule\Schulprojekt\Schulprojekt\obj\Debug\net8.0\staticwebassets.build.json
 D:\Schule\Schulprojekt\Schulprojekt\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\Schule\Schulprojekt\Schulprojekt\obj\Debug\net8.0\staticwebassets.development.json
 D:\Schule\Schulprojekt\Schulprojekt\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-D:\Schule\Schulprojekt\Schulprojekt\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\Schule\Schulprojekt\Schulprojekt\obj\Debug\net8.0\Schulprojekt.dll
 D:\Schule\Schulprojekt\Schulprojekt\obj\Debug\net8.0\refint\Schulprojekt.dll
 D:\Schule\Schulprojekt\Schulprojekt\obj\Debug\net8.0\Schulprojekt.pdb
@@ -137,3 +136,4 @@ D:\Schule\Schulprojekt\Schulprojekt\bin\Debug\net8.0\runtimes\win\lib\net6.0\Sys
 D:\Schule\Schulprojekt\Schulprojekt\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
 D:\Schule\Schulprojekt\Schulprojekt\obj\Debug\net8.0\Schulprojekt.csproj.AssemblyReference.cache
 D:\Schule\Schulprojekt\Schulprojekt\obj\Debug\net8.0\Schulpro.99A0A9BD.Up2Date
+D:\Schule\Schulprojekt\Schulprojekt\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

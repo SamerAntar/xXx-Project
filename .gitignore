@@ -1,0 +1,23 @@
+# Visual Studio
+.vs/
+*.suo
+DocumentLayout.json
+
+# Build output
+bin/
+obj/
+**/bin/
+**/obj/
+
+# .NET / MSBuild generated files
+*.cache
+*.cache.json
+*.assets.cache
+*.AssemblyInfo.cs
+*.AssemblyInfoInputs.cache
+*.GeneratedMSBuildEditorConfig.editorconfig
+*.sourceLink.json
+
+# OS junk
+.DS_Store
+Thumbs.db
