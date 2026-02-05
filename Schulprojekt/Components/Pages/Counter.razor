@@ -1,0 +1,26 @@
+﻿@page "/counter"
+@inject NotificationService NotificationService
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<RadzenButton Variant="Variant.Flat" Click=@(args => OnClick("Success button ")) Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
+
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    private void OnClick(string text)
+    {
+        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Button Clicked", Detail = text });
+    }
+}

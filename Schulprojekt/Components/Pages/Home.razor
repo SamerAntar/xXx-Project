@@ -1,0 +1,96 @@
+﻿@page "/"
+@using Schulprojekt.Data
+@using Schulprojekt.Services
+@inject ISpielerService spielerService;
+@inject IRaumService raumService;
+@inject NotificationService NotificationService
+
+<div class="home-background">
+    <div class="home-content">
+        <PageTitle>Home</PageTitle>
+
+        <h1>Hello, Boys!</h1>
+
+        <h2>Welcome to Hunter X Hunter Game.</h2>
+
+        <div style="width:300px; margin: 5mm;">
+            <RadzenLabel> Select a Player</RadzenLabel>
+            <RadzenDropDown Placeholder="--Select a Player--"
+                            AllowClear="true"
+                            Data="@players"
+                            TValue="string"
+                            @bind-Value="selectedPlayerName"
+                            Change="OnPlayerChanged" />
+            @if (IsPlayerMissing())
+            {
+                <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                             Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark"
+                             Style="width:75%">
+                    Player should be chosen!
+                </RadzenAlert>
+            }
+        </div>
+
+        <div style="width:300px; margin: 5mm;">
+            <RadzenLabel> Select a Room</RadzenLabel>
+            <RadzenDropDown Placeholder="--Select a Room--" AllowClear="true"
+                            TValue="Raum"
+                            Data=@rooms
+                            @bind-Value="selectedRoom"
+                            TextProperty="Name" />
+            @if (IsRoomMissing())
+            {
+                <RadzenAlert Style="width:75%" AllowClose="false" AlertStyle="AlertStyle.Warning"
+                             Size="AlertSize.ExtraSmall" Variant="Variant.Flat">
+                    Room should be chosen!
+                </RadzenAlert>
+            }
+        </div>
+
+
+        <RadzenButton Variant="Variant.Flat" Click=@(args => OnClick("This feature is still under development and will be implemented in the next step 🚧😉")) Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
+    </div>
+</div>
+
+
+
+
+@code {
+    List<string> players = new() { "Hisoka", "Gone", "Kilwa" };
+    List<Raum> rooms = new();
+
+    Raum? selectedRoom;
+    string? selectedPlayerName;
+    Spieler? selectedPlayer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        rooms = await raumService.GetAllRooms();
+        selectedPlayer = new Spieler();
+        var sam = selectedPlayer;
+    }
+
+    void OnPlayerChanged(object value)
+    {
+        var name = value as string;
+
+        if (string.IsNullOrEmpty(name))
+        {
+            selectedPlayer = null;
+            return;
+        }
+
+        selectedPlayer = new Spieler
+        {
+            Name = name
+        };
+    }
+
+    private bool IsPlayerMissing() => string.IsNullOrEmpty(selectedPlayerName);
+    private bool IsRoomMissing() => selectedRoom is null;
+
+    private void OnClick(string text)
+    {
+        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Button Clicked", Detail = text });
+    }
+}
