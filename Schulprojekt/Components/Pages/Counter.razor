@@ -1,4 +1,5 @@
 ﻿@page "/counter"
+@page "/counter/{Id:int}"
 @inject NotificationService NotificationService
 
 <PageTitle>Counter</PageTitle>
@@ -13,7 +14,10 @@
 
 @code {
     private int currentCount = 0;
-
+    [Parameter]
+    public int Id { get; set; }
+    
+    
     private void IncrementCount()
     {
         currentCount++;

@@ -4,7 +4,7 @@
 @inject ISpielerService spielerService;
 @inject IRaumService raumService;
 @inject NotificationService NotificationService
-
+@inject NavigationManager Navi
 <div class="home-background">
     <div class="home-content">
         <PageTitle>Home</PageTitle>
@@ -15,12 +15,12 @@
 
         <div style="width:300px; margin: 5mm;">
             <RadzenLabel> Select a Player</RadzenLabel>
-            <RadzenDropDown Placeholder="--Select a Player--"
-                            AllowClear="true"
+            <RadzenDropDown Placeholder="--Select a Player--" AllowClear="true"
+                            TValue="Spieler"
                             Data="@players"
-                            TValue="string"
-                            @bind-Value="selectedPlayerName"
-                            Change="OnPlayerChanged" />
+                            TextProperty="Name"
+                            @bind-Value="selectedPlayer"
+                             />
             @if (IsPlayerMissing())
             {
                 <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
@@ -48,7 +48,7 @@
         </div>
 
 
-        <RadzenButton Variant="Variant.Flat" Click=@(args => OnClick("This feature is still under development and will be implemented in the next step 🚧😉")) Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
+        <RadzenButton Variant="Variant.Flat" Click="@OnClick"  Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
     </div>
 </div>
 
@@ -56,18 +56,16 @@
 
 
 @code {
-    List<string> players = new() { "Hisoka", "Gone", "Kilwa" };
+    List<Spieler> players = new();
     List<Raum> rooms = new();
 
     Raum? selectedRoom;
-    string? selectedPlayerName;
     Spieler? selectedPlayer;
 
     protected override async Task OnInitializedAsync()
     {
         rooms = await raumService.GetAllRooms();
-        selectedPlayer = new Spieler();
-        var sam = selectedPlayer;
+        players = await spielerService.GetAllPlayers();
     }
 
     void OnPlayerChanged(object value)
@@ -86,11 +84,15 @@
         };
     }
 
-    private bool IsPlayerMissing() => string.IsNullOrEmpty(selectedPlayerName);
+    private bool IsPlayerMissing() => string.IsNullOrEmpty(selectedPlayer?.Name);
     private bool IsRoomMissing() => selectedRoom is null;
 
-    private void OnClick(string text)
+    private void OnClick()
     {
-        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Button Clicked", Detail = text });
+         if (selectedPlayer == null)
+             return;
+
+        Navi.NavigateTo($"/counter/{selectedPlayer?.Id}");
+       // NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Button Clicked", Detail = text });
     }
 }
