@@ -1,8 +1,6 @@
 ﻿@page "/PageSingleChoice"
-
-
-
-
+@page "/PageSingleChoice/{SpielerId:int}"
+@inject NavigationManager Navi
 
 
 <h3>PageSingleChoice</h3>
@@ -10,34 +8,28 @@
 
 <h5>Hi ich bin Samer und werde ich das im Nachgang weitermachen !!!</h5>
 
+<RadzenButton Variant="Variant.Flat" Click="@GoToNextPage" Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<RadzenButton></RadzenButton>
 
 @code {
 
+    [Parameter]
+    public int? SpielerId { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+    }
+
+    private void GoToNextPage()
+    {
+        if (SpielerId == null)
+            return;
+
+        Navi.NavigateTo($"/PageSingleChoice/{SpielerId}");
+        // NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Button Clicked", Detail = text });
+    }
 }

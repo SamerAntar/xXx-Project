@@ -48,7 +48,7 @@
         </div>
 
 
-        <RadzenButton Variant="Variant.Flat" Click="@OnClick"  Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
+        <RadzenButton Variant="Variant.Flat" Click="@GoToNextPage" Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
     </div>
 </div>
 
@@ -87,12 +87,12 @@
     private bool IsPlayerMissing() => string.IsNullOrEmpty(selectedPlayer?.Name);
     private bool IsRoomMissing() => selectedRoom is null;
 
-    private void OnClick()
+    private void GoToNextPage()
     {
          if (selectedPlayer == null)
              return;
 
-        Navi.NavigateTo($"/counter/{selectedPlayer?.Id}");
+        Navi.NavigateTo($"/PageSingleChoice/{selectedPlayer?.Id}");
        // NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Button Clicked", Detail = text });
     }
 }
