@@ -92,7 +92,10 @@
          if (selectedPlayer == null)
              return;
 
-        Navi.NavigateTo($"/PageSingleChoice/{selectedPlayer?.Id}");
-       // NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Button Clicked", Detail = text });
+        //Todo:  Edge Cases testen (z. B. ungültige oder fehlende Character-ID). 
+        // Es sollte verhindert werden zu navigieren wenn der ID von Spieler nicht in der Datenbank gespeichert. Und NotificationMessage anzeigen. ich brauche aber die Datenbank zuerst. :)
+       // NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "ID nicht existiert", Detail = text });
+        
+       Navi.NavigateTo($"/PageSingleChoice/{selectedPlayer?.Id}");
     }
 }
