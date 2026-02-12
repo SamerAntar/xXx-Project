@@ -10,8 +10,6 @@
 
 <RadzenButton Variant="Variant.Flat" Click="@GoToNextPage" Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
 
-<RadzenButton></RadzenButton>
-
 @code {
 
     [Parameter]
@@ -29,7 +27,7 @@
         if (SpielerId == null)
             return;
 
-        Navi.NavigateTo($"/PageSingleChoice/{SpielerId}");
+        Navi.NavigateTo($"/PageTrueFalseChoice/{SpielerId}");
         // NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Button Clicked", Detail = text });
     }
 }
