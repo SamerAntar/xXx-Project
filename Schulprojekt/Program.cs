@@ -10,6 +10,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddScoped<ISpielerService, SpielerService>();
 builder.Services.AddScoped<IRaumService, RaumService>();
+builder.Services.AddScoped<IFrageService, FrageService>();
 builder.Services.AddRadzenComponents();
 
 
