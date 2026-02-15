@@ -7,7 +7,6 @@
 @inject NotificationService NotificationService
 
 
-
 @if (listFragen.Count <= 0)
 {
     <h3>Loding...</h3>
@@ -28,14 +27,15 @@ else
                     </RadzenRow>
                 </RadzenStack>
                 <hr />
-                <RadzenStack>
-                    @foreach (var antwort in x.Antworten)
-                    {
-                        <RadzenRow AlignItems="AlignItems.Center">
-                            <RadzenCheckBox TValue="bool" Value="false" />
-                            <RadzenLabel Text="@antwort.Name" Style="margin-left:8px" />
-                        </RadzenRow>
-                    }
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start" Gap="0.5rem" class="rz-p-sm-12">
+                    <RadzenRadioButtonList @bind-Value=@x.SelectedAntwort TValue="Antwort" Change="@(value => OnAnswerChanged(value))" Orientation="Orientation.Vertical">
+                        <Items>
+                            @foreach (var antwort in x.Antworten)
+                            {
+                                <RadzenRadioButtonListItem Text="@antwort.Name" Value="@antwort" />
+                            }
+                        </Items>
+                    </RadzenRadioButtonList>
                 </RadzenStack>
             </RadzenCard>
         </Template>
@@ -43,16 +43,10 @@ else
 }
 
 
-
-
-
-
-
 @code {
     List<Frage> listFragen = new();
     string path = "";
 
-    Antwort? selectedAnswer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -62,6 +56,19 @@ else
         path = "images/HomeMain.png";
 
         var sam = 99;
+    }
+
+    void OnAnswerChanged(Antwort value)
+    {
+
+        // Hier weiß ich genau welche Antwort gewählt wurde
+        var sam = value;
+
+        // Beispiel Logik
+        if (value.Id == 1)
+        {
+            // irgendwas machen
+        }
     }
 
 }

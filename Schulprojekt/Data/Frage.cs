@@ -10,5 +10,8 @@ namespace Schulprojekt.Data
 
         [InverseProperty("Frage")]
         public virtual ICollection<Antwort> Antworten { get; set; } = new List<Antwort>();
+        
+        [NotMapped]
+        public Antwort? SelectedAntwort { get; set; }
     }
 }

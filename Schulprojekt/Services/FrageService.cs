@@ -76,23 +76,23 @@ namespace Schulprojekt.Services
                     {
                         new Antwort()
                         {
-                            Id = 5,
-                            Name = "Komposition"
+                            Id = 9,
+                            Name = "Komponentendiagramm"
                         },
                         new Antwort()
                         {
-                            Id = 6,
-                            Name = "Aggregation"
+                            Id = 10,
+                            Name = "Use-Case-Diagramm"
                         },
                         new Antwort()
                         {
-                            Id = 7,
-                            Name = "Assoziation"
+                            Id = 11,
+                            Name = "Sequenzdiagramm"
                         },
                         new Antwort()
                         {
-                            Id = 8,
-                            Name = "Generalisierung"
+                            Id = 12,
+                            Name = "Paketdiagramm"
                         }
                     }
                 },
@@ -105,23 +105,23 @@ namespace Schulprojekt.Services
                     {
                         new Antwort()
                         {
-                            Id = 5,
-                            Name = "Komposition"
+                            Id = 13,
+                            Name = "Abhängigkeit"
                         },
                         new Antwort()
                         {
-                            Id = 6,
-                            Name = "Aggregation"
-                        },
-                        new Antwort()
-                        {
-                            Id = 7,
+                            Id = 14,
                             Name = "Assoziation"
                         },
                         new Antwort()
                         {
-                            Id = 8,
+                            Id = 15,
                             Name = "Generalisierung"
+                        },
+                        new Antwort()
+                        {
+                            Id = 16,
+                            Name = "Realisation"
                         }
                     }
                 },
@@ -134,23 +134,23 @@ namespace Schulprojekt.Services
                     {
                         new Antwort()
                         {
-                            Id = 5,
-                            Name = "Komposition"
+                            Id = 17,
+                            Name = "Aktivitätsdiagramm"
                         },
                         new Antwort()
                         {
-                            Id = 6,
-                            Name = "Aggregation"
+                            Id = 18,
+                            Name = "Klassendiagramm"
                         },
                         new Antwort()
                         {
-                            Id = 7,
-                            Name = "Assoziation"
+                            Id = 19,
+                            Name = "Zustandsdiagramm"
                         },
                         new Antwort()
                         {
-                            Id = 8,
-                            Name = "Generalisierung"
+                            Id = 20,
+                            Name = "Objektdiagramm"
                         }
                     }
                 },
@@ -163,28 +163,144 @@ namespace Schulprojekt.Services
                     {
                         new Antwort()
                         {
-                            Id = 5,
-                            Name = "Komposition"
+                            Id = 21,
+                            Name = "Darstellung der Klassenhierarchie"
                         },
                         new Antwort()
                         {
-                            Id = 6,
-                            Name = "Aggregation"
+                            Id = 22,
+                            Name = "Modellierung von Abläufen und Workflows"
                         },
                         new Antwort()
                         {
-                            Id = 7,
+                            Id = 23,
+                            Name = "Beschreibung der Systemarchitektur"
+                        },
+                        new Antwort()
+                        {
+                            Id = 24,
+                            Name = "Darstellung von Objektinteraktionen über Zeit"
+                        }
+                    }
+                },
+                new Frage()
+                {
+                    Id = 7,
+                    Name = "Welche Darstellung gehört typischerweise zu einem Zustandsdiagramm?",
+
+                    Antworten = new List<Antwort>()
+                    {
+                        new Antwort()
+                        {
+                            Id = 25,
+                            Name = "Lebenslinien"
+                        },
+                        new Antwort()
+                        {
+                            Id = 26,
+                            Name = "Zustände und Übergänge"
+                        },
+                        new Antwort()
+                        {
+                            Id = 27,
+                            Name = "Komponenten und Schnittstellen"
+                        },
+                        new Antwort()
+                        {
+                            Id = 28,
+                            Name = "Pakete und Abhängigkeiten"
+                        }
+                    }
+                },
+                new Frage()
+                {
+                    Id = 8,
+                    Name = "Welche Beziehung wird im Klassendiagramm durch eine gestrichelte Linie mit einem offenen Pfeil dargestellt?",
+
+                    Antworten = new List<Antwort>()
+                    {
+                        new Antwort()
+                        {
+                            Id = 29,
                             Name = "Assoziation"
                         },
                         new Antwort()
                         {
-                            Id = 8,
-                            Name = "Generalisierung"
+                            Id = 30,
+                            Name = "Realisierung"
+                        },
+                        new Antwort()
+                        {
+                            Id = 31,
+                            Name = "Komposition"
+                        },
+                        new Antwort()
+                        {
+                            Id = 32,
+                            Name = "Aggregation"
+                        }
+                    }
+                },
+                new Frage()
+                {
+                    Id = 9,
+                    Name = "Wofür wird ein Use-Case-Diagramm verwendet?",
+
+                    Antworten = new List<Antwort>()
+                    {
+                        new Antwort()
+                        {
+                            Id = 33,
+                            Name = "Darstellung der Systemlogik"
+                        },
+                        new Antwort()
+                        {
+                            Id = 34,
+                            Name = "Beschreibung der Interaktion zwischen Akteuren und System"
+                        },
+                        new Antwort()
+                        {
+                            Id = 35,
+                            Name = "Modellierung der Datenbankstruktur"
+                        },
+                        new Antwort()
+                        {
+                            Id = 36,
+                            Name = "Darstellung der zeitlichen Abfolge von Nachrichten"
+                        }
+                    }
+                },
+                new Frage()
+                {
+                    Id = 10,
+                    Name = "Was zeigt ein Objektdiagramm?",
+
+                    Antworten = new List<Antwort>()
+                    {
+                        new Antwort()
+                        {
+                            Id = 37,
+                            Name = "Konkrete Instanzen von Klassen zu einem bestimmten Zeitpunkt"
+                        },
+                        new Antwort()
+                        {
+                            Id = 38,
+                            Name = "Die gesamte Klassenhierarchie"
+                        },
+                        new Antwort()
+                        {
+                            Id = 39,
+                            Name = "Die Kommunikation zwischen Komponenten"
+                        },
+                        new Antwort()
+                        {
+                            Id = 40,
+                            Name = "Die möglichen Zustände eines Objekts"
                         }
                     }
                 }
             };
-
+            
 
 
 
