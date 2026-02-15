@@ -1,43 +1,74 @@
 ﻿@page "/PageSingleChoice"
+@using Schulprojekt.Data
+@using Schulprojekt.Services
+@inject ISpielerService spielerService;
+@inject IRaumService raumService;
+@inject IFrageService frageService;
+@inject NotificationService NotificationService
 
 
+@if (listFragen.Count <= 0)
+{
+    <h3>Loding...</h3>
+}
+else
+{
+    <h3>PageSingleChoice</h3>
 
-
-
-
-<h3>PageSingleChoice</h3>
-
-
-<h5>Hi ich bin Samer und werde ich das im Nachgang weitermachen !!!</h5>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    <RadzenDataList WrapItems="true" PageSize="10" ShowPagingSummary=true AllowPaging="true" Data="@listFragen" TItem="Frage">
+        <Template Context="x">
+            <RadzenCard Style="width:400px;">
+                <RadzenStack>
+                    <RadzenRow JustifyContent="JustifyContent.Center">
+                        <RadzenImage Path="@path" Style="width: 100px; height: 100px; border-radius: 50%;" />
+                    </RadzenRow>
+                    <RadzenRow>
+                        <b>@(x.Id + "- " + x.Name)</b>
+                    </RadzenRow>
+                </RadzenStack>
+                <hr />
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start" Gap="0.5rem" class="rz-p-sm-12">
+                    <RadzenRadioButtonList @bind-Value=@x.SelectedAntwort TValue="Antwort" Change="@(value => OnAnswerChanged(value))" Orientation="Orientation.Vertical">
+                        <Items>
+                            @foreach (var antwort in x.Antworten)
+                            {
+                                <RadzenRadioButtonListItem Text="@antwort.Name" Value="@antwort" />
+                            }
+                        </Items>
+                    </RadzenRadioButtonList>
+                </RadzenStack>
+            </RadzenCard>
+        </Template>
+    </RadzenDataList>
+}
 
 
 @code {
+    List<Frage> listFragen = new();
+    string path = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        listFragen = await frageService.GetAllQuestions();
+
+        path = "images/HomeMain.png";
+
+        var sam = 99;
+    }
+
+    void OnAnswerChanged(Antwort value)
+    {
+
+        // Hier weiß ich genau welche Antwort gewählt wurde
+        var sam = value;
+
+        // Beispiel Logik
+        if (value.Id == 1)
+        {
+            // irgendwas machen
+        }
+    }
 
 }
