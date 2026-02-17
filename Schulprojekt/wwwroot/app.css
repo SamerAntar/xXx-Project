@@ -52,7 +52,6 @@ h1:focus {
 
 .home-background{
     position: relative;
-    background-image: url('/images/HomeMain.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -71,3 +70,33 @@ h1:focus {
     color: white;
     padding: 3rem;
 }
+
+
+.questions_background {
+    position: relative;
+    overflow: hidden;
+     min-height: 100vh;
+}
+
+.questions_background::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(3px);
+    transform: scale(1.1);
+    z-index: 0;
+}
+
+.questions_background > * {
+    position: relative;
+    z-index: 1;
+}
+
+
+
+
+
