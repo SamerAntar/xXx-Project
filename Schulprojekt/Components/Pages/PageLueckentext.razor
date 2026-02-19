@@ -1,10 +1,12 @@
 ﻿@page "/PageLueckentext"
+@page "/PageLueckentext/{Id:int}"
 
 @using Schulprojekt.Data
 @using Schulprojekt.Services
 
 @inject IFrageService frageService
 @inject NotificationService NotificationService
+@inject NavigationManager Navi
 
 
 @if (listFragen.Count <= 0)
@@ -54,13 +56,13 @@ else
     // Fragenliste aus dem Service
     private List<Frage> listFragen = new();
 
-    // User-Eingabe pro Frage-ID (int Key)
+    // User-Eingabe pro Frage-ID
     private Dictionary<int, string> userInputs = new();
 
     // Ergebnistext pro Frage-ID
     private Dictionary<int, string> results = new();
 
-    // Dummy richtige Antworten (nur Test, bis ihr es aus DB/Service liefert)
+    // Dummy richtige Antworten (nur Test, bis ihr es aus DB)
     private Dictionary<int, string> correctAnswers = new()
     {
         // Passe diese IDs an reale Fragen-IDs an
@@ -72,7 +74,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        // Alle Fragen laden
+        // Alle Fragen laden von Lueckentext
         listFragen = await frageService.GetLueckentextQuestions();
 
         // Dictionary initialisieren (nur Fragen mit ID)
@@ -90,7 +92,7 @@ else
 
     private void Check(Frage f)
     {
-        // Sicherheitscheck: ohne ID geht es nicht
+        // ohne ID geht es nicht
         if (!f.Id.HasValue)
             return;
 
@@ -99,16 +101,16 @@ else
         // User-Eingabe lesen
         var user = (userInputs.ContainsKey(id) ? userInputs[id] : "").Trim();
 
-        // Wenn keine richtige Antwort gepflegt ist (Dummy-Phase)
+        // Wenn keine richtige Antwort gepflegt ist
         if (!correctAnswers.ContainsKey(id))
         {
-            results[id] = "ℹ️ Keine richtige Antwort hinterlegt (Dummy).";
+            results[id] = "ℹ️ Keine richtige Antwort hinterlegt.";
             return;
         }
 
         var correct = correctAnswers[id].Trim();
 
-        // Vergleich (case-insensitive)
+        // Vergleich
         if (string.Equals(user, correct, StringComparison.OrdinalIgnoreCase))
         {
             results[id] = "✅ Richtig (+1)";
@@ -118,4 +120,6 @@ else
             results[id] = $"❌ Falsch (0) — richtig wäre: {correct}";
         }
     }
+
+
 }
