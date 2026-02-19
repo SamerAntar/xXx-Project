@@ -4,6 +4,6 @@ namespace Schulprojekt.Services
 {
     public interface IRaumService
     {
-        Task<List<Raum>> GetAllRooms();
+        //Task<List<Raum>> GetAllRooms();
     }
 }

@@ -1,16 +1,22 @@
+using Microsoft.EntityFrameworkCore;
 using Radzen;
 using Schulprojekt.Components;
+using Schulprojekt.Data;
 using Schulprojekt.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add SQL Server connection
+builder.Services.AddDbContext<ApplicationDbContext>(
+    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddScoped<ISpielerService, SpielerService>();
-builder.Services.AddScoped<IRaumService, RaumService>();
-builder.Services.AddScoped<IFrageService, FrageService>();
+//builder.Services.AddScoped<IRaumService, RaumService>();
+builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddRadzenComponents();
 
 
