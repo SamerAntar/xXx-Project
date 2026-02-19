@@ -18,9 +18,9 @@
             <RadzenLabel> Select a Player</RadzenLabel>
             <RadzenDropDown Placeholder="--Select a Player--"
                             AllowClear="true"
-                            Data="@players"
+                            Data="@spielers"
                             TValue="string"
-                            @bind-Value="selectedPlayerName"
+                            @bind-Value="selectedPlayer"
                             Change="OnPlayerChanged" />
             @if (IsPlayerMissing())
             {
@@ -47,7 +47,7 @@
                 </RadzenAlert>
             }
         </div>
-        <RadzenButton Variant="Variant.Flat" Click=@(args => OnClick("This feature is still under development and will be implemented in the next step 🚧😉")) Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
+        <RadzenButton Variant="Variant.Flat" Click="GoToNextPage" Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
 
 
 @*         <RadzenButton Variant="Variant.Flat" Click=@(args => OnClick("This feature is still under development and will be implemented in the next step 🚧😉")) Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
@@ -60,6 +60,7 @@
 @code {
     List<string> players = new() { "Hisoka", "Gone", "Kilwa" };
     List<Raum> rooms = new();
+    List<Spieler> spielers = new();
 
     Raum? selectedRoom;
     string? selectedPlayerName;
@@ -68,6 +69,7 @@
     protected override async Task OnInitializedAsync()
     {
         rooms = await raumService.GetAllRooms();
+        spielers = await spielerService.GetAllPlayers();
         selectedPlayer = new Spieler();
         var sam = selectedPlayer;
     }
