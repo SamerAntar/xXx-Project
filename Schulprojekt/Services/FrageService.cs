@@ -307,5 +307,39 @@ namespace Schulprojekt.Services
 
             return fragen.ToList();
         }
+        // Refs #10: Lückentext-Fragen
+        public async Task<List<Frage>> GetLueckentextQuestions()
+        {
+            await Task.CompletedTask;
+
+            return new List<Frage>
+            {
+                new Frage
+                {
+                    Id = 1001,
+                    Name = "TCP ist ____ (connection-oriented).",
+                    Antworten = new List<Antwort>() // leer => Freitext
+                },
+                new Frage
+                {
+                    Id = 1002,
+                    Name = "Der Standard-Port für HTTPS ist ____.",
+                    Antworten = new List<Antwort>()
+                },
+                new Frage
+                {
+                    Id = 1003,
+                    Name = "DNS verwendet standardmäßig Port ____ (UDP).",
+                    Antworten = new List<Antwort>()
+                },
+                new Frage
+                {
+                    Id = 1004,
+                    Name = "In UML zeigt ein offenes Dreieck meist ____ (Beziehung).",
+                    Antworten = new List<Antwort>()
+                }
+            };
+        }
+
     }
 }
