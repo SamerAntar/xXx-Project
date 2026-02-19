@@ -2,7 +2,6 @@
 @using Schulprojekt.Data
 @using Schulprojekt.Services
 @inject ISpielerService spielerService;
-@inject IRaumService raumService;
 @inject NotificationService NotificationService
 @inject NavigationManager Navi
 
@@ -57,14 +56,14 @@
 
         if (string.IsNullOrEmpty(name))
         {
-            selectedPlayer = null;
+            //selectedPlayer = null;
             return;
         }
 
-        selectedPlayer = new Spieler
-        {
-            Name = name
-        };
+        // selectedPlayer = new Spieler
+        // {
+        //     Name = name
+        // };
     }
 
     private bool IsPlayerMissing() => string.IsNullOrEmpty(selectedPlayer?.Name);
@@ -80,8 +79,8 @@
             return;
 
         //Todo:  Edge Cases testen (z. B. ungültige oder fehlende Character-ID).
-        // Es sollte verhindert werden zu navigieren wenn der ID von Spieler nicht in der Datenbank gespeichert. Und NotificationMessage anzeigen. ich brauche aber die Datenbank zuerst. :)
-        // NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "ID nicht existiert", Detail = text });
+        //Es sollte verhindert werden zu navigieren wenn der ID von Spieler nicht in der Datenbank gespeichert. Und NotificationMessage anzeigen. ich brauche aber die Datenbank zuerst. :)
+        //NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "ID nicht existiert", Detail = text });
 
         Navi.NavigateTo($"/PageSingleChoice/{selectedPlayer?.Id}");
     }
