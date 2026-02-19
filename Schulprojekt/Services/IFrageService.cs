@@ -6,7 +6,6 @@ namespace Schulprojekt.Services
     {
         Task<List<Frage>> GetAllQuestions();
 
-        // Refs #10
         Task<List<Frage>> GetLueckentextQuestions();
     }
 }
