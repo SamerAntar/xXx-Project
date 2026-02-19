@@ -1,0 +1,121 @@
+﻿@page "/PageLueckentext"
+
+@using Schulprojekt.Data
+@using Schulprojekt.Services
+
+@inject IFrageService frageService
+@inject NotificationService NotificationService
+
+
+@if (listFragen.Count <= 0)
+{
+    <h3>Loading...</h3>
+}
+else
+{
+    <h3>PageLueckentext</h3>
+
+    <RadzenDataList WrapItems="true"
+                    PageSize="10"
+                    ShowPagingSummary="true"
+                    AllowPaging="true"
+                    Data="@listFragen"
+                    TItem="Frage">
+        <Template Context="x">
+            <RadzenCard Style="width:500px;">
+                <RadzenStack Gap="0.5rem">
+                    <b>@(x.Id + " - " + x.Name)</b>
+
+                    @* Wenn Id null ist, können wir nicht prüfen *@
+                    @if (x.Id.HasValue)
+                    {
+                        <RadzenTextBox @bind-Value="userInputs[x.Id.Value]"
+                                       Placeholder="Antwort eingeben..."
+                                       Style="width:100%;" />
+
+                        <RadzenButton Text="Prüfen" Click="@(args => Check(x))" />
+
+                        @if (results.ContainsKey(x.Id.Value))
+                        {
+                            <p><b>@results[x.Id.Value]</b></p>
+                        }
+                    }
+                    else
+                    {
+                        <p><b>⚠️ Frage hat keine ID (Id = null). Prüfen nicht möglich.</b></p>
+                    }
+                </RadzenStack>
+            </RadzenCard>
+        </Template>
+    </RadzenDataList>
+}
+
+@code {
+    // Fragenliste aus dem Service
+    private List<Frage> listFragen = new();
+
+    // User-Eingabe pro Frage-ID (int Key)
+    private Dictionary<int, string> userInputs = new();
+
+    // Ergebnistext pro Frage-ID
+    private Dictionary<int, string> results = new();
+
+    // Dummy richtige Antworten (nur Test, bis ihr es aus DB/Service liefert)
+    private Dictionary<int, string> correctAnswers = new()
+    {
+        // Passe diese IDs an reale Fragen-IDs an
+         { 1001, "verbindungsorientiert" }, 
+         { 1002, "443" },
+         { 1003, "53" },
+         { 1004, "Vererbung" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Alle Fragen laden
+        listFragen = await frageService.GetLueckentextQuestions();
+
+        // Dictionary initialisieren (nur Fragen mit ID)
+        foreach (var f in listFragen)
+        {
+            if (!f.Id.HasValue)
+                continue;
+
+            var id = f.Id.Value;
+
+            if (!userInputs.ContainsKey(id))
+                userInputs[id] = "";
+        }
+    }
+
+    private void Check(Frage f)
+    {
+        // Sicherheitscheck: ohne ID geht es nicht
+        if (!f.Id.HasValue)
+            return;
+
+        var id = f.Id.Value;
+
+        // User-Eingabe lesen
+        var user = (userInputs.ContainsKey(id) ? userInputs[id] : "").Trim();
+
+        // Wenn keine richtige Antwort gepflegt ist (Dummy-Phase)
+        if (!correctAnswers.ContainsKey(id))
+        {
+            results[id] = "ℹ️ Keine richtige Antwort hinterlegt (Dummy).";
+            return;
+        }
+
+        var correct = correctAnswers[id].Trim();
+
+        // Vergleich (case-insensitive)
+        if (string.Equals(user, correct, StringComparison.OrdinalIgnoreCase))
+        {
+            results[id] = "✅ Richtig (+1)";
+        }
+        else
+        {
+            results[id] = $"❌ Falsch (0) — richtig wäre: {correct}";
+        }
+    }
+}
