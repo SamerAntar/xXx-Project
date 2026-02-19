@@ -1,46 +1,97 @@
 ﻿@page "/PageTrueFalseChoice"
 @page "/PageTrueFalseChoice/{Id:int}"
 
+@using Schulprojekt.Data
+@using Schulprojekt.Services
+@inject ISpielerService spielerService;
+@inject IRaumService raumService;
+@inject IFrageService frageService;
+@inject NotificationService NotificationService
+@inject NavigationManager Navi
 
 
+@if (listFragen.Count <= 0)
+{
+    <h3>Loding...</h3>
+}
+else
+{
+    <h3>PageTrueFalseChoice</h3>
 
+    <RadzenDataList WrapItems="true" PageSize="10" ShowPagingSummary=true AllowPaging="false" Data="@listFragen" TItem="Frage">
+        <Template Context="x">
+            <RadzenCard Style="width:400px;">
+                <RadzenStack>
+                    <RadzenRow JustifyContent="JustifyContent.Center">
+                        <RadzenImage Path="@path" Style="width: 100px; height: 100px; border-radius: 50%;" />
+                    </RadzenRow>
+                    <RadzenRow>
+                        <b>@(x.Id - 10 + "- " + x.Name)</b>
+                    </RadzenRow>
+                </RadzenStack>
+                <hr />
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start" Gap="0.5rem" class="rz-p-sm-12">
+                    <RadzenRadioButtonList @bind-Value=@x.SelectedAntwort TValue="Antwort" Change="@(value => OnAnswerChanged(value))" Orientation="Orientation.Vertical">
+                        <Items>
+                            @foreach (var antwort in x.Antworten)
+                            {
+                                <RadzenRadioButtonListItem Text="@antwort.Name" Value="@antwort" />
+                            }
+                        </Items>
+                    </RadzenRadioButtonList>
+                </RadzenStack>
+            </RadzenCard>
+        </Template>
+    </RadzenDataList>
 
-<h3>PageTrueFalseChoice</h3>
+    <RadzenButton Variant="Variant.Flat" Click="GoToNextPage" Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
 
-
-<h5>Hi ich bin Houman und werde das im Nachgang weitermachen!!!</h5>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 @code {
+    List<Frage> listFragen = new();
+    string path = "";
 
     [Parameter]
     public int? Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        listFragen = await frageService.GetAllTrueFalseQuestions();
+
+        path = "images/HomeMain.png";
+
+        var hom = 99;
+
+    }
+
+    List<int?> list = new();
+
+    void OnAnswerChanged(Antwort value)
+    {
+
+        // Hier weiß ich genau welche Antwort gewählt wurde
+        var sam = value;
+
+        // Beispiel Logik
+        if (value.Id == 1)
+        {
+            // irgendwas machen
+        }
+    }
+
+    private void GoToNextPage()
+    {
+        if (Id == null)
+            return;
+
+        //Todo:  Edge Cases testen (z. B. ungültige oder fehlende Character-ID).
+        // Es sollte verhindert werden zu navigieren wenn der ID von Spieler nicht in der Datenbank gespeichert. Und NotificationMessage anzeigen. ich brauche aber die Datenbank zuerst. :)
+        // NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "ID nicht existiert", Detail = text });
+
+        Navi.NavigateTo($"/PageMultipleChoice/{Id}");
+    }
 
 }
