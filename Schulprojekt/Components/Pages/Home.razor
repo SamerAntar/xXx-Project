@@ -4,6 +4,7 @@
 @inject ISpielerService spielerService;
 @inject IRaumService raumService;
 @inject NotificationService NotificationService
+@inject NavigationManager Navi
 
 <div class="home-background" style="background-image: url('/images/HomeMain.png')">
     <div class="home-content">
@@ -46,10 +47,11 @@
                 </RadzenAlert>
             }
         </div>
-
-
         <RadzenButton Variant="Variant.Flat" Click=@(args => OnClick("This feature is still under development and will be implemented in the next step 🚧😉")) Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
-    </div>
+
+
+@*         <RadzenButton Variant="Variant.Flat" Click=@(args => OnClick("This feature is still under development and will be implemented in the next step 🚧😉")) Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
+ *@    </div>
 </div>
 
 
@@ -92,5 +94,17 @@
     private void OnClick(string text)
     {
         NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Button Clicked", Detail = text });
+    }
+
+    private void GoToNextPage()
+    {
+        if (selectedPlayer == null)
+            return;
+
+        //Todo:  Edge Cases testen (z. B. ungültige oder fehlende Character-ID).
+        // Es sollte verhindert werden zu navigieren wenn der ID von Spieler nicht in der Datenbank gespeichert. Und NotificationMessage anzeigen. ich brauche aber die Datenbank zuerst. :)
+        // NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "ID nicht existiert", Detail = text });
+
+        Navi.NavigateTo($"/PageSingleChoice/{selectedPlayer?.Id}");
     }
 }
