@@ -1,10 +1,12 @@
 ﻿@page "/PageSingleChoice"
+@page "/PageSingleChoice/{Id:int}"
 @using Schulprojekt.Data
 @using Schulprojekt.Services
 @inject ISpielerService spielerService;
 @inject IRaumService raumService;
 @inject IFrageService frageService;
 @inject NotificationService NotificationService
+@inject NavigationManager Navi
 
 
 @if (listFragen.Count <= 0)
@@ -40,6 +42,9 @@ else
             </RadzenCard>
         </Template>
     </RadzenDataList>
+
+    <RadzenButton Variant="Variant.Flat" Click="GoToNextPage" Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
+
 }
 
 
@@ -47,6 +52,8 @@ else
     List<Frage> listFragen = new();
     string path = "";
 
+    [Parameter]
+    public int? Id {get; set;}
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,6 +76,18 @@ else
         {
             // irgendwas machen
         }
+    }
+
+    private void GoToNextPage()
+    {
+        if (Id == null)
+            return;
+
+        //Todo:  Edge Cases testen (z. B. ungültige oder fehlende Character-ID).
+        // Es sollte verhindert werden zu navigieren wenn der ID von Spieler nicht in der Datenbank gespeichert. Und NotificationMessage anzeigen. ich brauche aber die Datenbank zuerst. :)
+        // NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "ID nicht existiert", Detail = text });
+
+        Navi.NavigateTo($"/PageTrueFalseChoice/{Id}");
     }
 
 }
