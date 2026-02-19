@@ -16,12 +16,11 @@
 
         <div style="width:300px; margin: 5mm;">
             <RadzenLabel> Select a Player</RadzenLabel>
-            <RadzenDropDown Placeholder="--Select a Player--"
-                            AllowClear="true"
+            <RadzenDropDown Placeholder="--Select a Player--" AllowClear="true"
+                            TValue="Spieler"
                             Data="@spielers"
-                            TValue="string"
-                            @bind-Value="selectedPlayer"
-                            Change="OnPlayerChanged" />
+                            TextProperty="Name"
+                            @bind-Value="selectedPlayer" />
             @if (IsPlayerMissing())
             {
                 <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
@@ -31,47 +30,25 @@
                 </RadzenAlert>
             }
         </div>
-
-        <div style="width:300px; margin: 5mm;">
-            <RadzenLabel> Select a Room</RadzenLabel>
-            <RadzenDropDown Placeholder="--Select a Room--" AllowClear="true"
-                            TValue="Raum"
-                            Data=@rooms
-                            @bind-Value="selectedRoom"
-                            TextProperty="Name" />
-            @if (IsRoomMissing())
-            {
-                <RadzenAlert Style="width:75%" AllowClose="false" AlertStyle="AlertStyle.Warning"
-                             Size="AlertSize.ExtraSmall" Variant="Variant.Flat">
-                    Room should be chosen!
-                </RadzenAlert>
-            }
-        </div>
         <RadzenButton Variant="Variant.Flat" Click="GoToNextPage" Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
 
 
-@*         <RadzenButton Variant="Variant.Flat" Click=@(args => OnClick("This feature is still under development and will be implemented in the next step 🚧😉")) Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
- *@    </div>
+    </div>
 </div>
 
 
 
 
 @code {
-    List<string> players = new() { "Hisoka", "Gone", "Kilwa" };
-    List<Raum> rooms = new();
+    
     List<Spieler> spielers = new();
 
-    Raum? selectedRoom;
-    string? selectedPlayerName;
     Spieler? selectedPlayer;
 
     protected override async Task OnInitializedAsync()
     {
-        rooms = await raumService.GetAllRooms();
         spielers = await spielerService.GetAllPlayers();
         selectedPlayer = new Spieler();
-        var sam = selectedPlayer;
     }
 
     void OnPlayerChanged(object value)
@@ -90,8 +67,7 @@
         };
     }
 
-    private bool IsPlayerMissing() => string.IsNullOrEmpty(selectedPlayerName);
-    private bool IsRoomMissing() => selectedRoom is null;
+    private bool IsPlayerMissing() => string.IsNullOrEmpty(selectedPlayer?.Name);
 
     private void OnClick(string text)
     {
