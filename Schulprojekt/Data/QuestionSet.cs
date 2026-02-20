@@ -18,6 +18,5 @@ namespace Schulprojekt.Data
 
         [InverseProperty("QuestionSet")]
         public ICollection<Question> Questions { get; set; } = new List<Question>();
-
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Schulprojekt.Data;
 
@@ -10,9 +11,11 @@ using Schulprojekt.Data;
 namespace Schulprojekt.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260220204623_CreateQuestionRelatedEntities")]
+    partial class CreateQuestionRelatedEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -219,7 +222,7 @@ namespace Schulprojekt.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Themes");
+                    b.ToTable("themes");
                 });
 
             modelBuilder.Entity("QuestionTheme", b =>
