@@ -17,6 +17,12 @@ namespace Schulprojekt.Data
         [ForeignKey(nameof(QuestionSetId))]
         [InverseProperty("Questions")]
         public virtual QuestionSet? QuestionSet { get; set; }
+        public ICollection<Theme> Themes { get; set; } = new List<Theme>();
 
+        [InverseProperty("Question")]
+        public ICollection<McAnswer> McAnswers { get; set; } = new List<McAnswer>();
+       
+        [InverseProperty("Question")]
+        public ICollection<GapField> GapFields { get; set; } = new List<GapField>();
     }
 }
