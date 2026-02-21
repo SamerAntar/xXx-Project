@@ -1,0 +1,21 @@
+﻿@page "/QuizKlassenDiagram"
+@page "/QuizKlassenDiagram/{SpielerId:int}"
+@using Schulprojekt.Services
+@using Schulprojekt.Data
+@inject IQuestionService questionService
+
+
+<h3>QuizKlassenDiagram</h3>
+
+@code {
+    [Parameter]
+    public int? SpielerId { get; set; }
+
+    List<Question> klassenDiagrammQuestions = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        klassenDiagrammQuestions = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(1)).ToList();
+        var sam = 99;
+    }
+}

@@ -3,8 +3,9 @@ using Schulprojekt.Data;
 
 namespace Schulprojekt.Services
 {
-    public class QuestionService : IQuestionService
+    public class QuestionSetService : IQuestionSetService
     {
+
         /// <summary>
         /// Reference to the dbContext in the ContextPage.
         /// Reference is set during construction and is readonly.
@@ -16,7 +17,7 @@ namespace Schulprojekt.Services
         /// Should only be instantiated in the ContextPage.
         /// </summary>
         /// <param name="dbContext">A reference to the private dbContext in the ContextPage.</param>
-        public QuestionService(ApplicationDbContext dbContext)
+        public QuestionSetService(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
@@ -24,17 +25,15 @@ namespace Schulprojekt.Services
         /// <summary>
         /// Default constructor required for mocking
         /// </summary>
-        public QuestionService() { }
+        public QuestionSetService() { }
 
-        public virtual async Task<IEnumerable<Question>> GetAllEntriesIncludingNavigationsAsync()
+        public virtual async Task<IEnumerable<QuestionSet?>> GetAllEntriesIncludingNavigationsAsync()
         {
             try
             {
-                return await dbContext.Questions
-                    .Include(x => x.McAnswers)
-                    .Include(x => x.QuestionSet)
-                    .Include(x => x.Themes)
-                    .Include(x => x.GapFields)
+                return await dbContext.QuestionSets
+                    .Include(x => x.Questions)
+                    .Include(x => x.Team)
                     .ToListAsync();
             }
             catch (Exception)
@@ -43,19 +42,16 @@ namespace Schulprojekt.Services
             }
         }
 
-        public virtual async Task<IEnumerable<Question>> GetAllEntriesByQuestionSetIncludingNavigationsAsync(int questionSetID)
+        public virtual async Task<QuestionSet?> GetEntryByKeyIncludingNavigationsAsync(int key)
         {
             try
             {
-                return await dbContext.Questions
-                    .Include(x => x.McAnswers)
-                    .Include(x => x.QuestionSet)
-                    .Include(x => x.Themes)
-                    .Include(x => x.GapFields)
-                    .Where(x => x.QuestionSet.Id == questionSetID)
-                    .ToListAsync();
+                return await dbContext.QuestionSets
+                    .Include(x => x.Questions)
+                    .Include(x => x.Team)
+                .FirstOrDefaultAsync(x => x.Id == key);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw;
             }

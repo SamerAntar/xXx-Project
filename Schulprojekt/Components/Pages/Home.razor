@@ -1,72 +1,85 @@
 ﻿@page "/"
 @using Schulprojekt.Data
 @using Schulprojekt.Services
-@inject ISpielerService spielerService;
+@inject ISpielerService spielerService
+@inject IQuestionSetService questionSetService
 @inject NotificationService NotificationService
 @inject NavigationManager Navi
 
 <div class="home-background" style="background-image: url('/images/HomeMain.png')">
     <div class="home-content">
+
         <PageTitle>Home</PageTitle>
 
-        <h1>Hello, Boys!</h1>
+        <h2>Willkommen beim Hunter X Hunter Spiel</h2>
 
-        <h2>Welcome to Hunter X Hunter Game.</h2>
-
-        <div style="width:300px; margin: 5mm;">
-            <RadzenLabel> Select a Player</RadzenLabel>
-            <RadzenDropDown Placeholder="--Select a Player--" AllowClear="true"
-                            TValue="Spieler"
-                            Data="@spielers"
-                            TextProperty="Name"
-                            @bind-Value="selectedPlayer" />
-            @if (IsPlayerMissing())
-            {
-                <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
-                             Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark"
-                             Style="width:75%">
-                    Player should be chosen!
-                </RadzenAlert>
-            }
+        <div style="display:flex; justify-content:center; margin-top:20px;">
+            <div style="width:300px;">
+                <!-- #Row 1 DropdownList (Spielers) -->
+                <RadzenLabel>Spieler auswählen</RadzenLabel>
+                <RadzenDropDown AllowClear="true"
+                                Placeholder="--Bitte Spieler auswählen--"
+                                TValue="Spieler"
+                                Data="@spielers"
+                                TextProperty="Name"
+                                @bind-Value="selectedPlayer" />
+                @if (IsPlayerMissing())
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                                 Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark"
+                                 Style="width:75%">
+                        Player should be chosen!
+                    </RadzenAlert>
+                }
+            </div>
+            <div style="width:300px;">
+                <!-- #Row 1 DropdownList (QuestionSet) -->
+                <RadzenLabel>Quiz auswählen</RadzenLabel>
+                <RadzenDropDown Placeholder="--Bitte Quiz auswählen--"
+                                AllowClear="true"
+                                TValue="QuestionSet"
+                                Data="@questionSets"
+                                TextProperty="Title"
+                                @bind-Value="selectedQuestionSet" />
+                @if (IsQuestionSetMissing())
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                                 Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark"
+                                 Style="width:75%">
+                        Player should be chosen!
+                    </RadzenAlert>
+                }
+            </div>
+        </div>     
+        
+        <div style="display:flex; justify-content:center; margin-top:80px;">
+            <RadzenButton Variant="Variant.Flat" Click="GoToNextPage" Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
         </div>
-        <RadzenButton Variant="Variant.Flat" Click="GoToNextPage" Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
-
-
+  
     </div>
 </div>
 
 
-
-
 @code {
-    
-    List<Spieler> spielers = new();
 
+    List<Spieler> spielers = new();
+    List<QuestionSet> questionSets = new();
     Spieler? selectedPlayer;
+    QuestionSet? selectedQuestionSet;
+
 
     protected override async Task OnInitializedAsync()
     {
         spielers = await spielerService.GetAllPlayers();
+        questionSets = (await questionSetService.GetAllEntriesIncludingNavigationsAsync()).ToList();
+
+
         selectedPlayer = new Spieler();
     }
 
-    void OnPlayerChanged(object value)
-    {
-        var name = value as string;
-
-        if (string.IsNullOrEmpty(name))
-        {
-            //selectedPlayer = null;
-            return;
-        }
-
-        // selectedPlayer = new Spieler
-        // {
-        //     Name = name
-        // };
-    }
-
     private bool IsPlayerMissing() => string.IsNullOrEmpty(selectedPlayer?.Name);
+    private bool IsQuestionSetMissing() => string.IsNullOrEmpty(selectedQuestionSet?.Title);
+
 
     private void OnClick(string text)
     {
@@ -75,13 +88,23 @@
 
     private void GoToNextPage()
     {
-        if (selectedPlayer == null)
+        if (selectedPlayer is null || selectedQuestionSet is null)
             return;
+
+        switch(selectedQuestionSet.Id)
+        {
+            case 1:
+                Navi.NavigateTo($"/QuizKlassenDiagram/{selectedPlayer?.Id}");
+                break;
+            //Muss hier um die ander Quizes erweitert werden.
+            default:
+                return;
+        }
 
         //Todo:  Edge Cases testen (z. B. ungültige oder fehlende Character-ID).
         //Es sollte verhindert werden zu navigieren wenn der ID von Spieler nicht in der Datenbank gespeichert. Und NotificationMessage anzeigen. ich brauche aber die Datenbank zuerst. :)
         //NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "ID nicht existiert", Detail = text });
 
-        Navi.NavigateTo($"/PageSingleChoice/{selectedPlayer?.Id}");
+        //Navi.NavigateTo($"/PageSingleChoice/{selectedPlayer?.Id}");
     }
 }
