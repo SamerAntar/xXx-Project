@@ -6,13 +6,12 @@
 @inject NotificationService NotificationService
 @inject NavigationManager Navi
 
+<PageTitle>Homepage</PageTitle>
+
+
 <div class="home-background" style="background-image: url('/images/HomeMain.png')">
     <div class="home-content">
-
-        <PageTitle>Home</PageTitle>
-
         <h2>Willkommen beim Hunter X Hunter Spiel</h2>
-
         <div style="display:flex; justify-content:center; margin-top:20px;">
             <div style="width:300px;">
                 <!-- #Row 1 DropdownList (Spielers) -->
@@ -27,8 +26,8 @@
                 {
                     <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
                                  Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark"
-                                 Style="width:75%">
-                        Player should be chosen!
+                                 Style="width:90%">
+                        Spieler ist erforderlich!
                     </RadzenAlert>
                 }
             </div>
@@ -45,17 +44,15 @@
                 {
                     <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
                                  Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark"
-                                 Style="width:75%">
-                        Player should be chosen!
+                                 Style="width:85%">
+                        Quiz ist erforderlich!
                     </RadzenAlert>
                 }
             </div>
         </div>     
-        
         <div style="display:flex; justify-content:center; margin-top:80px;">
-            <RadzenButton Variant="Variant.Flat" Click="GoToNextPage" Text="Lets Go :)" ButtonStyle="ButtonStyle.Success" />
+            <RadzenButton Variant="Variant.Flat" Click="GoQuizPage" Text="Quiz starten" ButtonStyle="ButtonStyle.Success" />
         </div>
-  
     </div>
 </div>
 
@@ -72,39 +69,36 @@
     {
         spielers = await spielerService.GetAllPlayers();
         questionSets = (await questionSetService.GetAllEntriesIncludingNavigationsAsync()).ToList();
-
-
-        selectedPlayer = new Spieler();
     }
 
+    /// <summary>
+    /// Player Validation.
+    /// </summary>
+    /// <returns></returns>
     private bool IsPlayerMissing() => string.IsNullOrEmpty(selectedPlayer?.Name);
+
+    /// <summary>
+    /// QuestionSet Validation.
+    /// </summary>
+    /// <returns></returns>
     private bool IsQuestionSetMissing() => string.IsNullOrEmpty(selectedQuestionSet?.Title);
 
-
-    private void OnClick(string text)
-    {
-        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Button Clicked", Detail = text });
-    }
-
-    private void GoToNextPage()
+    /// <summary>
+    /// Navigate to the
+    /// </summary>
+    private void GoQuizPage()
     {
         if (selectedPlayer is null || selectedQuestionSet is null)
-            return;
-
-        switch(selectedQuestionSet.Id)
         {
-            case 1:
-                Navi.NavigateTo($"/QuizKlassenDiagram/{selectedPlayer?.Id}");
-                break;
-            //Muss hier um die ander Quizes erweitert werden.
-            default:
-                return;
+            NotificationService.Notify(new NotificationMessage 
+                { 
+                    Severity = NotificationSeverity.Info, 
+                    Summary = "Fehlende Eingaben", 
+                    Detail = "bitte Spieler und Quiz auswählen" });
+
+            return;
         }
 
-        //Todo:  Edge Cases testen (z. B. ungültige oder fehlende Character-ID).
-        //Es sollte verhindert werden zu navigieren wenn der ID von Spieler nicht in der Datenbank gespeichert. Und NotificationMessage anzeigen. ich brauche aber die Datenbank zuerst. :)
-        //NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "ID nicht existiert", Detail = text });
-
-        //Navi.NavigateTo($"/PageSingleChoice/{selectedPlayer?.Id}");
+        Navi.NavigateTo($"/Quiz/{selectedPlayer.Id}/{selectedQuestionSet.Id}");
     }
 }
