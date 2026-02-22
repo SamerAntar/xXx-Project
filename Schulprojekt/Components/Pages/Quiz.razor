@@ -32,7 +32,7 @@ else
                     @if (x.QuestionType == QuestionType.TF && !x.AllowsMultiple)
                     {
                         <!-- (SingleChoice Answers) -->
-                        <RadzenRadioButtonList @bind-Value=@x.selectedAnswer TValue="McAnswer" Change="@(value => SinglechoiceEvaluating(value))" Orientation="Orientation.Vertical">
+                        <RadzenRadioButtonList @bind-Value=@x.selectedAnswer TValue="McAnswer" Change="@(value => SinglechoiceEvaluating(value, x))" Orientation="Orientation.Vertical">
                             <Items>
                                 @foreach (var antwort in x.McAnswers)
                                 {
@@ -57,6 +57,11 @@ else
     {
         <RadzenButton Variant="Variant.Flat" Text="Abgeben" ButtonStyle="ButtonStyle.Success" />
     }
+
+
+    <RadzenStack Gap="1rem" class="rz-m-12">
+        <RadzenProgressBar Value="@barValue" Max="QuestionsList.Count" Unit=@(" out of " + QuestionsList.Count) AriaLabel="Upload progress" />
+    </RadzenStack>
 }
 
 
@@ -66,6 +71,9 @@ else
     [Parameter] public int? QuestionSetId { get; set; }
 
     List<Question> QuestionsList = new();
+
+    HashSet<int> answeredQuestions = new HashSet<int>();
+    double barValue = 0;
 
     int playerPoints = 0;
     string pageTitle = "";
@@ -84,19 +92,19 @@ else
         {
             case 1:  //Klassendiagramm Fragen
                 pageTitle = "KlassenDiagram Quiz";
-                QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(QuestionSetId.Value)).ToList();
+                await loadData(QuestionSetId.Value);
                 break;
             case 2:  //Squenzdiagramm Fragen
                 pageTitle = "SquenzDiagramm Quiz";
-                QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(QuestionSetId.Value)).ToList();
+                await loadData(QuestionSetId.Value);
                 break;
             case 3:  //Aktivitätsdiagramm Fragen
                 pageTitle = "AktivitätsDiagramm Quiz";
-                QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(QuestionSetId.Value)).ToList();
+                await loadData(QuestionSetId.Value);
                 break;
             case 4:  //UseCasediagramm Fragen
                 pageTitle = "Usecasediagramm Quiz";
-                QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(QuestionSetId.Value)).ToList();
+                await loadData(QuestionSetId.Value);
                 break;
             default:
                 QuestionsList = new List<Question>();
@@ -104,11 +112,16 @@ else
         }
     }
 
+    async Task loadData(int questionSetId)
+    {
+        QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(questionSetId)).ToList();
+    }
+
     /// <summary>
     /// Singlechoice Evaluating
     /// </summary>
     /// <param name="value"></param>
-    void SinglechoiceEvaluating(McAnswer value)
+    void SinglechoiceEvaluating(McAnswer value, Question question)
     {
         if (value is null)
             return;
@@ -116,6 +129,12 @@ else
         if (value.IsCorrect)
         {
             playerPoints += value.Points;
+        }
+
+        if(!answeredQuestions.Contains(question.Id))
+        {
+            barValue++;
+            answeredQuestions.Add(question.Id);
         }
     }
 }
