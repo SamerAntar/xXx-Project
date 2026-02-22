@@ -1,0 +1,104 @@
+﻿@using Schulprojekt.Data
+@using Schulprojekt.Services
+@inject IQuestionSetService questionSetService
+@inject NotificationService NotificationService
+@inject NavigationManager Navi
+
+<RadzenCard class="completed-card rz-shadow-4 rz-p-6">
+    <RadzenStack AlignItems="AlignItems.Center" Gap="1.5rem">
+        @if (PlayerPoints > 3)
+        {
+            <RadzenIcon Icon="emoji_events" Style="font-size:64px;color:#4caf50;" />
+
+            <h2>Super! 😊 Du hast das nächste Quiz freigeschaltet!</h2>
+
+            <RadzenButton Text="Nächstes Quiz starten"
+                          Click="GoToNextQuiz"
+                          Icon="arrow_forward"
+                          ButtonStyle="ButtonStyle.Success"
+                          Style="margin-top:1rem" />
+        }
+        else
+        {
+            <RadzenIcon Icon="sentiment_dissatisfied" Style="font-size:64px;color:#f44336;" />
+
+            <h2>Du hast noch nicht genug Punkte gesammelt. 😕</h2>
+            <h5>Beantworte die falschen Fragen erneut, um das nächste Quiz freizuschalten 😊</h5>
+
+            <RadzenButton Text="Falsche Fragen wiederholen"
+                          Click="@(() => OnRetryWrong.InvokeAsync())"
+                          Icon="arrow_back"
+                          ButtonStyle="ButtonStyle.Danger"
+                          Style="margin-top:1rem" />
+        }
+    </RadzenStack>
+</RadzenCard>
+
+
+<style>
+    .completed-card {
+        max-width: 520px;
+        margin: 5rem auto;
+        border-radius: 16px;
+        /* Start-Zustand */
+        opacity: 0;
+        transform: scale(0.95);
+        /* Animation über Transition */
+        transition: opacity 0.6s ease, transform 0.6s ease;
+        /* Optik */
+        background: linear-gradient(145deg, #ffffff, #f3f6f9);
+    }
+
+    /* Wird automatisch aktiv, sobald gerendert */
+    .completed-card {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+</style>
+
+
+
+@code {
+
+    [Parameter] public int? PlayerPoints { get; set; }
+
+    [Parameter] public int? QuestionSetId { get; set; }
+
+    [Parameter] public int? SpielerId { get; set; }
+
+    [Parameter] public EventCallback OnRetryWrong { get; set; }
+
+
+    List<QuestionSet> questionSets = new();
+
+    HashSet<int> questionSetsIds = new HashSet<int>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        questionSets = (await questionSetService.GetAllEntriesIncludingNavigationsAsync()).ToList();
+
+        foreach(var item in questionSets)
+        {
+            if(item.Id != QuestionSetId)
+            {
+                questionSetsIds.Add(item.Id);
+            }
+        }
+    }
+
+    private void GoToNextQuiz()
+    {
+        if (SpielerId.HasValue && questionSetsIds.Any())
+        {
+            int nextQuizId = questionSetsIds.First();
+            questionSetsIds.Remove(nextQuizId);
+            Navi.NavigateTo($"/Quiz/{SpielerId}/{nextQuizId}");
+        }
+        else
+        {
+            // Optional: Info wenn kein Quiz mehr vorhanden oder Maxim baut die Bewertungsseite und erstellt die Navigation da.
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Kein weiteres Quiz", Duration = 3000 });
+        }
+    }
+}

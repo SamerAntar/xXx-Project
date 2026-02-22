@@ -3,6 +3,8 @@
 @using Schulprojekt.Services
 @using Schulprojekt.Data
 @inject IQuestionService questionService
+@inject NotificationService NotificationService
+
 
 <PageTitle>@pageTitle</PageTitle>
 <h3>@pageTitle</h3>
@@ -14,50 +16,64 @@
 }
 else
 {
-    <RadzenDataList WrapItems="true" PageSize="1" ShowPagingSummary=true AllowPaging="true" Data="@QuestionsList" TItem="Question">
+    <RadzenDataList WrapItems="false" PageSize="1" ShowPagingSummary=true AllowPaging="true" @ref="dataList" Data="@QuestionsList" TItem="Question">
         <Template Context="x">
-            <RadzenCard Style="width:600px;">
-                <!-- (Questions) -->
-                <RadzenStack>
-                    <RadzenRow JustifyContent="JustifyContent.Center">
-                        @* <RadzenImage Path="@path" Style="width: 100px; height: 100px; border-radius: 50%;" /> *@
-                    </RadzenRow>
-                    <RadzenRow>
-                        <b>@(x.StartText)</b>
-                    </RadzenRow>
-                </RadzenStack>
-                <hr />
-                <!-- (Answers) -->
-                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start" Gap="0.5rem" class="rz-p-sm-12">
-                    @if (x.QuestionType == QuestionType.TF && !x.AllowsMultiple)
-                    {
-                        <!-- (SingleChoice Answers) -->
-                        <RadzenRadioButtonList @bind-Value=@x.selectedAnswer TValue="McAnswer" Change="@(value => SinglechoiceEvaluating(value, x))" Orientation="Orientation.Vertical">
-                            <Items>
-                                @foreach (var antwort in x.McAnswers)
-                                {
-                                    <RadzenRadioButtonListItem Text="@antwort.OptionText" Value="@antwort" />
-                                }
-                            </Items>
-                        </RadzenRadioButtonList>
-                    }
-                    else if (x.QuestionType == QuestionType.MC && x.AllowsMultiple)
-                    {
-                        <!-- (MultipleChoice Answers) Maxiem Aufgabe -->
-                    }
-                    else if (x.QuestionType == QuestionType.GAP && x.AllowsMultiple)
-                    {
-                        <!-- (Lückentext Choice Answers) Mohamad oder Houman -->
-                    }
-                </RadzenStack>
-            </RadzenCard>
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenCard Style="width:600px;">
+                    <!-- (Questions) -->
+                    <RadzenStack>
+                        <RadzenRow JustifyContent="JustifyContent.Center">
+                            @* <RadzenImage Path="@path" Style="width: 100px; height: 100px; border-radius: 50%;" /> *@
+                        </RadzenRow>
+                        <RadzenRow>
+                            <b>@(x.StartText)</b>
+                        </RadzenRow>
+                    </RadzenStack>
+                    <hr />
+                    <!-- (Answers) -->
+                    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start" Gap="0.5rem" class="rz-p-sm-12">
+                        @if (x.QuestionType == QuestionType.TF && !x.AllowsMultiple)
+                        {
+                            <!-- (SingleChoice Answers) -->
+                            <RadzenRadioButtonList @bind-Value=@x.selectedAnswer TValue="McAnswer" Change="@(value => SinglechoiceEvaluating(value, x))" Orientation="Orientation.Vertical">
+                                <Items>
+                                    @foreach (var antwort in x.McAnswers)
+                                    {
+                                        <RadzenRadioButtonListItem Text="@antwort.OptionText" Value="@antwort" />
+                                    }
+                                </Items>
+                            </RadzenRadioButtonList>
+                        }
+                        else if (x.QuestionType == QuestionType.MC && x.AllowsMultiple)
+                        {
+                            <!-- (MultipleChoice Answers) Maxiem Aufgabe -->
+                        }
+                        else if (x.QuestionType == QuestionType.GAP && x.AllowsMultiple)
+                        {
+                            <!-- (Lückentext Choice Answers) Mohamad oder Houman -->
+                        }
+                    </RadzenStack>
+                </RadzenCard>
+                <RadzenCard Style="width:600px;">
+                    <RadzenImage Path="@quizFoto" Style="width:560px;"></RadzenImage>
+                </RadzenCard>
+            </RadzenStack>
+           
         </Template>
     </RadzenDataList>
     @if (QuestionsList != null && QuestionsList.All(x => x.selectedAnswer != null))
     {
-        <RadzenButton Variant="Variant.Flat" Text="Abgeben" ButtonStyle="ButtonStyle.Success" />
+        <RadzenButton Variant="Variant.Flat" Text="Abgeben" Click="QuizAccomplisched" ButtonStyle="ButtonStyle.Success" />
     }
-
+    @if (quizDone)
+    {
+        <CompletedQuizMessage 
+            PlayerPoints="playerPoints" 
+            QuestionSetId="QuestionSetId" 
+            SpielerId="SpielerId"
+            OnRetryWrong="ReloadWrongQuestions">
+        </CompletedQuizMessage>
+    }
 
     <RadzenStack Gap="1rem" class="rz-m-12">
         <RadzenProgressBar Value="@barValue" Max="QuestionsList.Count" Unit=@(" out of " + QuestionsList.Count) AriaLabel="Upload progress" />
@@ -65,25 +81,44 @@ else
 }
 
 
-
 @code {
     [Parameter] public int? SpielerId { get; set; }
     [Parameter] public int? QuestionSetId { get; set; }
 
+    RadzenDataList<Question>? dataList;
     List<Question> QuestionsList = new();
+    List<Question> wrongAnsweredQuestions = new();
 
     HashSet<int> answeredQuestions = new HashSet<int>();
     double barValue = 0;
 
     int playerPoints = 0;
     string pageTitle = "";
+    string quizFoto = "";
+
+    bool quizDone = false;
 
     McAnswer? selectedSingleChoiceAnswer;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
+        quizDone = false;
+        barValue = 0;
+        answeredQuestions.Clear();
+
         await determinQuizData();
 
+        foreach (var question in QuestionsList)
+        {
+            question.selectedAnswer = null;
+        }
+
+        StateHasChanged();
+
+        if (dataList != null)
+        {
+            await dataList.FirstPage(true);  // show first Question.
+        }
     }
 
     async Task determinQuizData()
@@ -93,10 +128,12 @@ else
             case 1:  //Klassendiagramm Fragen
                 pageTitle = "KlassenDiagram Quiz";
                 await loadData(QuestionSetId.Value);
+                quizFoto = "/images/KlassenDiagrammQuiz.png";
                 break;
             case 2:  //Squenzdiagramm Fragen
                 pageTitle = "SquenzDiagramm Quiz";
                 await loadData(QuestionSetId.Value);
+                quizFoto = "/images/SequenzdiagrammQuiz.png";
                 break;
             case 3:  //Aktivitätsdiagramm Fragen
                 pageTitle = "AktivitätsDiagramm Quiz";
@@ -115,6 +152,7 @@ else
     async Task loadData(int questionSetId)
     {
         QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(questionSetId)).ToList();
+        QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.TF).ToList(); // Temprory bcause the other Answers not yet made.
     }
 
     /// <summary>
@@ -130,11 +168,48 @@ else
         {
             playerPoints += value.Points;
         }
+        else
+        {
+            if(!wrongAnsweredQuestions.Contains(question))
+            {
+                wrongAnsweredQuestions.Add(question);
+            }
+        }
 
         if(!answeredQuestions.Contains(question.Id))
         {
             barValue++;
             answeredQuestions.Add(question.Id);
+        }
+    }
+
+    void QuizAccomplisched()
+    {
+        quizDone = true;  
+    }
+
+    public async Task ReloadWrongQuestions()
+    {
+        if(wrongAnsweredQuestions.Any())
+        {
+            QuestionsList = wrongAnsweredQuestions.ToList();
+
+            foreach(var question in QuestionsList)
+            {
+                question.selectedAnswer = null; // Reset antworten.
+            }
+
+            barValue = 0;
+            answeredQuestions.Clear();
+            wrongAnsweredQuestions.Clear();
+            quizDone = false;
+
+            await InvokeAsync(StateHasChanged);
+          
+            if(dataList != null)
+            {
+                await dataList.FirstPage(true);  // show first Wrong Question.
+            }
         }
     }
 }
