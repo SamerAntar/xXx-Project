@@ -24,5 +24,8 @@ namespace Schulprojekt.Data
        
         [InverseProperty("Question")]
         public ICollection<GapField> GapFields { get; set; } = new List<GapField>();
+
+        [NotMapped]
+        public McAnswer? selectedAnswer { get; set; }
     }
 }

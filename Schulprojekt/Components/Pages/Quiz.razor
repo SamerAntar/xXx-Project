@@ -1,0 +1,140 @@
+﻿@page "/Quiz"
+@page "/Quiz/{SpielerId:int}/{QuestionSetId:int}"
+@using Schulprojekt.Services
+@using Schulprojekt.Data
+@inject IQuestionService questionService
+
+<PageTitle>@pageTitle</PageTitle>
+<h3>@pageTitle</h3>
+
+
+@if (QuestionsList.Count <= 0)
+{
+    <h3>Loding...</h3>
+}
+else
+{
+    <RadzenDataList WrapItems="true" PageSize="1" ShowPagingSummary=true AllowPaging="true" Data="@QuestionsList" TItem="Question">
+        <Template Context="x">
+            <RadzenCard Style="width:600px;">
+                <!-- (Questions) -->
+                <RadzenStack>
+                    <RadzenRow JustifyContent="JustifyContent.Center">
+                        @* <RadzenImage Path="@path" Style="width: 100px; height: 100px; border-radius: 50%;" /> *@
+                    </RadzenRow>
+                    <RadzenRow>
+                        <b>@(x.StartText)</b>
+                    </RadzenRow>
+                </RadzenStack>
+                <hr />
+                <!-- (Answers) -->
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start" Gap="0.5rem" class="rz-p-sm-12">
+                    @if (x.QuestionType == QuestionType.TF && !x.AllowsMultiple)
+                    {
+                        <!-- (SingleChoice Answers) -->
+                        <RadzenRadioButtonList @bind-Value=@x.selectedAnswer TValue="McAnswer" Change="@(value => SinglechoiceEvaluating(value, x))" Orientation="Orientation.Vertical">
+                            <Items>
+                                @foreach (var antwort in x.McAnswers)
+                                {
+                                    <RadzenRadioButtonListItem Text="@antwort.OptionText" Value="@antwort" />
+                                }
+                            </Items>
+                        </RadzenRadioButtonList>
+                    }
+                    else if (x.QuestionType == QuestionType.MC && x.AllowsMultiple)
+                    {
+                        <!-- (MultipleChoice Answers) Maxiem Aufgabe -->
+                    }
+                    else if (x.QuestionType == QuestionType.GAP && x.AllowsMultiple)
+                    {
+                        <!-- (Lückentext Choice Answers) Mohamad oder Houman -->
+                    }
+                </RadzenStack>
+            </RadzenCard>
+        </Template>
+    </RadzenDataList>
+    @if (QuestionsList != null && QuestionsList.All(x => x.selectedAnswer != null))
+    {
+        <RadzenButton Variant="Variant.Flat" Text="Abgeben" ButtonStyle="ButtonStyle.Success" />
+    }
+
+
+    <RadzenStack Gap="1rem" class="rz-m-12">
+        <RadzenProgressBar Value="@barValue" Max="QuestionsList.Count" Unit=@(" out of " + QuestionsList.Count) AriaLabel="Upload progress" />
+    </RadzenStack>
+}
+
+
+
+@code {
+    [Parameter] public int? SpielerId { get; set; }
+    [Parameter] public int? QuestionSetId { get; set; }
+
+    List<Question> QuestionsList = new();
+
+    HashSet<int> answeredQuestions = new HashSet<int>();
+    double barValue = 0;
+
+    int playerPoints = 0;
+    string pageTitle = "";
+
+    McAnswer? selectedSingleChoiceAnswer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await determinQuizData();
+
+    }
+
+    async Task determinQuizData()
+    {
+        switch (QuestionSetId)
+        {
+            case 1:  //Klassendiagramm Fragen
+                pageTitle = "KlassenDiagram Quiz";
+                await loadData(QuestionSetId.Value);
+                break;
+            case 2:  //Squenzdiagramm Fragen
+                pageTitle = "SquenzDiagramm Quiz";
+                await loadData(QuestionSetId.Value);
+                break;
+            case 3:  //Aktivitätsdiagramm Fragen
+                pageTitle = "AktivitätsDiagramm Quiz";
+                await loadData(QuestionSetId.Value);
+                break;
+            case 4:  //UseCasediagramm Fragen
+                pageTitle = "Usecasediagramm Quiz";
+                await loadData(QuestionSetId.Value);
+                break;
+            default:
+                QuestionsList = new List<Question>();
+                break;
+        }
+    }
+
+    async Task loadData(int questionSetId)
+    {
+        QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(questionSetId)).ToList();
+    }
+
+    /// <summary>
+    /// Singlechoice Evaluating
+    /// </summary>
+    /// <param name="value"></param>
+    void SinglechoiceEvaluating(McAnswer value, Question question)
+    {
+        if (value is null)
+            return;
+
+        if (value.IsCorrect)
+        {
+            playerPoints += value.Points;
+        }
+
+        if(!answeredQuestions.Contains(question.Id))
+        {
+            barValue++;
+            answeredQuestions.Add(question.Id);
+        }
+    }
+}
