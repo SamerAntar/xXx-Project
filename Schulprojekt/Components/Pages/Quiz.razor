@@ -16,7 +16,8 @@
 }
 else
 {
-    <RadzenDataList WrapItems="false" PageSize="1" ShowPagingSummary=true AllowPaging="true" @ref="dataList" Data="@QuestionsList" TItem="Question">
+    <RadzenDataList WrapItems="false" PageNumbersCount="10"
+                    PageSize="1" ShowPagingSummary=true AllowPaging="true" @ref="dataList" Data="@QuestionsList" TItem="Question">
         <Template Context="x">
             <RadzenStack Orientation="Orientation.Horizontal">
                 <RadzenCard Style="width:600px;">
