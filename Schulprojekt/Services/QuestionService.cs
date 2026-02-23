@@ -1,64 +1,56 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Schulprojekt.Data;
 
 namespace Schulprojekt.Services
 {
+    /// <summary>
+    /// Service zur Datenabfrage von Questions über den DbContext.
+    /// </summary>
     public class QuestionService : IQuestionService
     {
         /// <summary>
-        /// Reference to the dbContext in the ContextPage.
-        /// Reference is set during construction and is readonly.
+        /// Referenz auf den ApplicationDbContext.
         /// </summary>
         private readonly ApplicationDbContext dbContext;
 
         /// <summary>
-        /// Constructor of the service.
-        /// Should only be instantiated in the ContextPage.
+        /// Konstruktor mit Übergabe des DbContext (Dependency Injection).
         /// </summary>
-        /// <param name="dbContext">A reference to the private dbContext in the ContextPage.</param>
         public QuestionService(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
 
         /// <summary>
-        /// Default constructor required for mocking
+        /// Parameterloser Konstruktor für Tests/Mocking.
         /// </summary>
         public QuestionService() { }
 
+        /// <summary>
+        /// Gibt alle Questions inklusive zugehöriger Navigationsdaten zurück.
+        /// </summary>
         public virtual async Task<IEnumerable<Question>> GetAllEntriesIncludingNavigationsAsync()
         {
-            try
-            {
-                return await dbContext.Questions
-                    .Include(x => x.McAnswers)
-                    .Include(x => x.QuestionSet)
-                    .Include(x => x.Themes)
-                    .Include(x => x.GapFields)
-                    .ToListAsync();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            return await dbContext.Questions
+                .Include(x => x.McAnswers)
+                .Include(x => x.QuestionSet)
+                .Include(x => x.Themes)
+                .Include(x => x.GapFields)
+                .ToListAsync();
         }
 
+        /// <summary>
+        /// Gibt alle Questions eines bestimmten QuestionSets inklusive Navigationsdaten zurück.
+        /// </summary>
         public virtual async Task<IEnumerable<Question>> GetAllEntriesByQuestionSetIncludingNavigationsAsync(int questionSetID)
         {
-            try
-            {
-                return await dbContext.Questions
-                    .Include(x => x.McAnswers)
-                    .Include(x => x.QuestionSet)
-                    .Include(x => x.Themes)
-                    .Include(x => x.GapFields)
-                    .Where(x => x.QuestionSet.Id == questionSetID)
-                    .ToListAsync();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            return await dbContext.Questions
+                .Include(x => x.McAnswers)
+                .Include(x => x.QuestionSet)
+                .Include(x => x.Themes)
+                .Include(x => x.GapFields)
+                .Where(x => x.QuestionSet.Id == questionSetID)
+                .ToListAsync();
         }
     }
 }
