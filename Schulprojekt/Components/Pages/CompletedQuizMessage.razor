@@ -2,6 +2,7 @@
 @using Schulprojekt.Services
 @inject IQuestionSetService questionSetService
 @inject NotificationService NotificationService
+@inject QuizStateService quizStateService
 @inject NavigationManager Navi
 
 <RadzenCard class="completed-card rz-shadow-4 rz-p-6">
@@ -63,7 +64,7 @@
 
     [Parameter] public int? PlayerPoints { get; set; }
 
-    [Parameter] public int? QuestionSetId { get; set; }
+    [Parameter] public int QuestionSetId { get; set; }
 
     [Parameter] public int? SpielerId { get; set; }
 
@@ -76,28 +77,35 @@
 
     protected override async Task OnInitializedAsync()
     {
-        questionSets = (await questionSetService.GetAllEntriesIncludingNavigationsAsync()).ToList();
 
-        foreach(var item in questionSets)
+        if (!quizStateService.IsInitialized)
         {
-            if(item.Id != QuestionSetId)
-            {
-                questionSetsIds.Add(item.Id);
-            }
-        }
-    }
+            questionSets = (await questionSetService.GetAllEntriesIncludingNavigationsAsync()).ToList();
 
+            quizStateService.RemainingQuizIds = questionSets
+                                                .Where(q => q != null)
+                                                .Select(q => q!.Id)
+                                                .ToHashSet();
+
+            quizStateService.IsInitialized = true;
+
+        }
+
+        quizStateService.RemainingQuizIds.Remove(QuestionSetId); // Remove Last Quiz so i can start the next one.
+    }
+   
     private void GoToNextQuiz()
     {
-        if (SpielerId.HasValue && questionSetsIds.Any())
+        if (quizStateService.RemainingQuizIds.Any())
         {
-            int nextQuizId = questionSetsIds.First();
-            questionSetsIds.Remove(nextQuizId);
+            int nextQuizId = quizStateService.RemainingQuizIds.First();
+            quizStateService.RemainingQuizIds.Remove(nextQuizId);
+
             Navi.NavigateTo($"/Quiz/{SpielerId}/{nextQuizId}");
         }
         else
         {
-            // Optional: Info wenn kein Quiz mehr vorhanden oder Maxim baut die Bewertungsseite und erstellt die Navigation da.
+            // Optional: Info wenn kein Quiz mehr vorhanden oder Maxiem baut die Bewertungsseite und erstellt die Navigation da.
             NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Kein weiteres Quiz", Duration = 3000 });
         }
     }

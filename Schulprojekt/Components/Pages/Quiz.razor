@@ -83,7 +83,7 @@ else
 
 @code {
     [Parameter] public int? SpielerId { get; set; }
-    [Parameter] public int? QuestionSetId { get; set; }
+    [Parameter] public int QuestionSetId { get; set; }
 
     RadzenDataList<Question>? dataList;
     List<Question> QuestionsList = new();
@@ -127,21 +127,21 @@ else
         {
             case 1:  //Klassendiagramm Fragen
                 pageTitle = "KlassenDiagram Quiz";
-                await loadData(QuestionSetId.Value);
+                await loadData(QuestionSetId);
                 quizFoto = "/images/KlassenDiagrammQuiz.png";
                 break;
             case 2:  //Squenzdiagramm Fragen
                 pageTitle = "SquenzDiagramm Quiz";
-                await loadData(QuestionSetId.Value);
+                await loadData(QuestionSetId);
                 quizFoto = "/images/SequenzdiagrammQuiz.png";
                 break;
             case 3:  //Aktivitätsdiagramm Fragen
                 pageTitle = "AktivitätsDiagramm Quiz";
-                await loadData(QuestionSetId.Value);
+                await loadData(QuestionSetId);
                 break;
             case 4:  //UseCasediagramm Fragen
                 pageTitle = "Usecasediagramm Quiz";
-                await loadData(QuestionSetId.Value);
+                await loadData(QuestionSetId);
                 break;
             default:
                 QuestionsList = new List<Question>();
