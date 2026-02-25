@@ -101,7 +101,7 @@
             int nextQuizId = quizStateService.RemainingQuizIds.First();
             quizStateService.RemainingQuizIds.Remove(nextQuizId);
 
-            Navi.NavigateTo($"/Quiz/{SpielerId}/{nextQuizId}");
+            Navi.NavigateTo($"/Quiz/SpielerID={SpielerId}/QuizID={nextQuizId}");
         }
         else
         {
