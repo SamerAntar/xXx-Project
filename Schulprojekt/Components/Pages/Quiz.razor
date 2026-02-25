@@ -1,5 +1,5 @@
 ﻿@page "/Quiz"
-@page "/Quiz/{SpielerId:int}/{QuestionSetId:int}"
+@page "/Quiz/SpielerID={SpielerId:int}/QuizID={QuestionSetId:int}"
 @using Schulprojekt.Services
 @using Schulprojekt.Data
 @inject IQuestionService questionService
@@ -16,7 +16,8 @@
 }
 else
 {
-    <RadzenDataList WrapItems="false" PageSize="1" ShowPagingSummary=true AllowPaging="true" @ref="dataList" Data="@QuestionsList" TItem="Question">
+    <RadzenDataList WrapItems="false" PageNumbersCount="10"
+                    PageSize="1" ShowPagingSummary=true AllowPaging="true" @ref="dataList" Data="@QuestionsList" TItem="Question">
         <Template Context="x">
             <RadzenStack Orientation="Orientation.Horizontal">
                 <RadzenCard Style="width:600px;">
@@ -83,7 +84,7 @@ else
 
 @code {
     [Parameter] public int? SpielerId { get; set; }
-    [Parameter] public int? QuestionSetId { get; set; }
+    [Parameter] public int QuestionSetId { get; set; }
 
     RadzenDataList<Question>? dataList;
     List<Question> QuestionsList = new();
@@ -127,21 +128,21 @@ else
         {
             case 1:  //Klassendiagramm Fragen
                 pageTitle = "KlassenDiagram Quiz";
-                await loadData(QuestionSetId.Value);
+                await loadData(QuestionSetId);
                 quizFoto = "/images/KlassenDiagrammQuiz.png";
                 break;
             case 2:  //Squenzdiagramm Fragen
                 pageTitle = "SquenzDiagramm Quiz";
-                await loadData(QuestionSetId.Value);
+                await loadData(QuestionSetId);
                 quizFoto = "/images/SequenzdiagrammQuiz.png";
                 break;
             case 3:  //Aktivitätsdiagramm Fragen
                 pageTitle = "AktivitätsDiagramm Quiz";
-                await loadData(QuestionSetId.Value);
+                await loadData(QuestionSetId);
                 break;
             case 4:  //UseCasediagramm Fragen
                 pageTitle = "Usecasediagramm Quiz";
-                await loadData(QuestionSetId.Value);
+                await loadData(QuestionSetId);
                 break;
             default:
                 QuestionsList = new List<Question>();
