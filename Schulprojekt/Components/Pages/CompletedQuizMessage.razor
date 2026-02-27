@@ -93,7 +93,7 @@
 
         quizStateService.RemainingQuizIds.Remove(QuestionSetId); // Remove Last Quiz so i can start the next one.
     }
-   
+
     private void GoToNextQuiz()
     {
         if (quizStateService.RemainingQuizIds.Any())
@@ -106,7 +106,8 @@
         else
         {
             // Optional: Info wenn kein Quiz mehr vorhanden oder Maxiem baut die Bewertungsseite und erstellt die Navigation da.
-            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Kein weiteres Quiz", Duration = 3000 });
+            Navi.NavigateTo($"/FinalResults/SpielerID={SpielerId}/QuestionSetID={QuestionSetId}");
+            //NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Kein weiteres Quiz", Duration = 3000 });
         }
     }
 }

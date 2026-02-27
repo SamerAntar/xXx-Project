@@ -1,0 +1,204 @@
+﻿@page "/FinalResults"
+@page "/FinalResults/SpielerID={SpielerId:int}/QuestionSetID={QuestionSetId:int}"
+@inject IQuestionSetService questionSetService
+@using Schulprojekt.Data
+@using Schulprojekt.Services
+@inject NavigationManager Navi
+
+<PageTitle>Final Results</PageTitle>
+
+<RadzenRow JustifyContent="JustifyContent.Center" class="rz-mt-6">
+    <RadzenColumn Size="8">
+
+        <!-- HERO CARD -->
+        <RadzenCard class="hero-card rz-shadow-6 rz-p-6">
+
+            <RadzenStack AlignItems="AlignItems.Center" Gap="1rem">
+
+                <RadzenHeading Size="H1">
+                    🎉 Game Completed!
+                </RadzenHeading>
+
+                <RadzenHeading Size="H2" class="score-text">
+                    @TotalPoints / @MaxPoints
+                </RadzenHeading>
+
+                <RadzenHeading Size="H3">
+                    @Percentage%
+                </RadzenHeading>
+
+                <RadzenProgressBar Value="@Percentage"
+                                   ShowValue="true"
+                                   Style="width:80%; height:20px;"
+                                   />
+                <RadzenIcon Icon="@MedalIcon"
+                            Style="@($"font-size:70px; color:{MedalColor};")" />
+
+                <RadzenText Style="font-size:18px;">
+                    @MotivationText
+                </RadzenText>
+
+            </RadzenStack>
+
+        </RadzenCard>
+
+        <!-- CHART -->
+        <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4">
+            <RadzenHeading Size="H4">Performance Overview</RadzenHeading>
+
+            <RadzenChart Style="height:350px;">
+                <RadzenColumnSeries Data="@TopicResults"
+                                    CategoryProperty="Topic"
+                                    ValueProperty="Percent" />
+                <RadzenCategoryAxis />
+                <RadzenValueAxis />
+            </RadzenChart>
+        </RadzenCard>
+
+        <!-- DETAIL GRID -->
+        <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4">
+            <RadzenHeading Size="H4">Detailed Results</RadzenHeading>
+
+            <RadzenDataGrid Data="@TopicResults" TItem="TopicResult">
+                <Columns>
+        
+                        <RadzenDataGridColumn TItem="QuestionSet" Property="Title" Title="Topic" />
+                        <RadzenDataGridColumn TItem="TopicResult" Property="Points" Title="Points" />
+                        <RadzenDataGridColumn TItem="TopicResult" Property="MaxPoints" Title="Max Points" />
+                        <RadzenDataGridColumn TItem="TopicResult" Property="Percent" Title="Percent (%)" />
+
+                    <RadzenDataGridColumn TItem="TopicResult" Title="Status">
+                        <Template Context="item">
+                            @if (item.Percent >= 60)
+                            {
+                                <RadzenBadge Text="Passed" BadgeStyle="BadgeStyle.Success" />
+                            }
+                            else
+                            {
+                                <RadzenBadge Text="Failed" BadgeStyle="BadgeStyle.Danger" />
+                            }
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenCard>
+
+        <!-- ACTION BUTTONS -->
+        <RadzenStack Orientation="Orientation.Horizontal"
+                     JustifyContent="JustifyContent.Center"
+                     Gap="1rem"
+                     class="rz-mt-4">
+
+            <RadzenButton Text="Restart Game"
+                          Icon="refresh"
+                          ButtonStyle="ButtonStyle.Primary"
+                          Click="@RestartGame" />
+
+            <RadzenButton Text="Back to Home"
+                          Icon="home"
+                          ButtonStyle="ButtonStyle.Light"
+                          Click="@GoHome" />
+
+        </RadzenStack>
+
+    </RadzenColumn>
+</RadzenRow>
+
+<style>
+    .hero-card {
+        border-radius: 20px;
+        background: linear-gradient(145deg, #ffffff, #f4f6fa);
+        text-align: center;
+    }
+
+    .score-text {
+        font-size: 48px;
+        font-weight: bold;
+    }
+</style>
+
+@code {
+
+    // Beispielwerte (später aus Service übergeben)
+    int TotalPoints = 320;
+    int MaxPoints = 400;
+
+    [Parameter] public int? PlayerPoints { get; set; }
+    [Parameter] public int? SpielerId { get; set; }
+    [Parameter] public int QuestionSetId { get; set; }
+
+    List<QuestionSet> questionSets = new();
+
+    int Percentage => (int)((double)TotalPoints / MaxPoints * 100);
+
+    string MedalIcon => Percentage switch
+    {
+        >= 90 => "emoji_events",
+        >= 75 => "military_tech",
+        >= 60 => "workspace_premium",
+        _ => "sentiment_dissatisfied"
+    };
+
+    string MedalColor => Percentage switch
+    {
+        >= 90 => "#FFD700", // Gold
+        >= 75 => "#C0C0C0", // Silver
+        >= 60 => "#cd7f32", // Bronze
+        _ => "#f44336"
+    };
+
+    string MotivationText => Percentage switch
+    {
+        >= 90 => "Outstanding performance! You mastered all topics!",
+        >= 75 => "Great job! You have strong knowledge.",
+        >= 60 => "Good effort! A little more practice will make it perfect.",
+        _ => "Keep practicing and try again!"
+    };
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        questionSets = (await questionSetService.GetAllEntriesIncludingNavigationsAsync()).ToList();
+
+        foreach (var item in questionSets)
+        {
+            foreach(var topic in TopicResults)
+            {
+                    topic.Topic = item.Title;
+            }
+        }
+
+        var sam = TopicResults;
+        var s = 99;
+    }
+
+
+
+    List<TopicResult> TopicResults = new()
+    {
+        new TopicResult { Points = 80, MaxPoints = 100, Percent = 80 },
+        new TopicResult { Points = 70, MaxPoints = 100, Percent = 70 },
+        new TopicResult { Points = 90, MaxPoints = 100, Percent = 90 },
+        new TopicResult { Points = 80, MaxPoints = 100, Percent = 80 }
+    };
+
+    void RestartGame()
+    {
+        Navi.NavigateTo("/");
+    }
+
+    void GoHome()
+    {
+        Navi.NavigateTo("/");
+    }
+
+    public class TopicResult
+    {
+        public string Topic { get; set; } = "";
+        public int Points { get; set; }
+        public int MaxPoints { get; set; }
+        public int Percent { get; set; }
+    }
+}
