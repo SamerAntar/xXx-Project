@@ -3,45 +3,38 @@ using Schulprojekt.Data;
 
 namespace Schulprojekt.Services
 {
+    // Service zur Verwaltung und Abfrage von QuestionSets aus der Datenbank
     public class QuestionSetService : IQuestionSetService
     {
-
-        /// <summary>
-        /// Reference to the dbContext in the ContextPage.
-        /// Reference is set during construction and is readonly.
-        /// </summary>
+        // Referenz auf den Datenbankkontext für den Zugriff auf die QuestionSets
         private readonly ApplicationDbContext dbContext;
 
-        /// <summary>
-        /// Constructor of the service.
-        /// Should only be instantiated in the ContextPage.
-        /// </summary>
-        /// <param name="dbContext">A reference to the private dbContext in the ContextPage.</param>
+        // Konstruktor mit Übergabe des DbContext (Dependency Injection)
         public QuestionSetService(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
         }
 
-        /// <summary>
-        /// Default constructor required for mocking
-        /// </summary>
+        // Parameterloser Konstruktor (z.B. für Tests oder Mocking)
         public QuestionSetService() { }
 
+        // Lädt alle QuestionSets inklusive ihrer verknüpften Fragen und Teams
         public virtual async Task<IEnumerable<QuestionSet?>> GetAllEntriesIncludingNavigationsAsync()
         {
             try
             {
                 return await dbContext.QuestionSets
-                    .Include(x => x.Questions)
-                    .Include(x => x.Team)
+                    .Include(x => x.Questions) // Zugehörige Fragen
+                    .Include(x => x.Team)      // Zugehöriges Team
                     .ToListAsync();
             }
             catch (Exception)
             {
-                throw;
+                throw; // Gibt die Exception unverändert weiter
             }
         }
 
+        // Lädt ein bestimmtes QuestionSet anhand seiner ID inklusive Navigationseigenschaften
         public virtual async Task<QuestionSet?> GetEntryByKeyIncludingNavigationsAsync(int key)
         {
             try
@@ -49,11 +42,11 @@ namespace Schulprojekt.Services
                 return await dbContext.QuestionSets
                     .Include(x => x.Questions)
                     .Include(x => x.Team)
-                .FirstOrDefaultAsync(x => x.Id == key);
+                    .FirstOrDefaultAsync(x => x.Id == key); // Sucht nach passender ID
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw;
+                throw; // Gibt die Exception unverändert weiter
             }
         }
     }
