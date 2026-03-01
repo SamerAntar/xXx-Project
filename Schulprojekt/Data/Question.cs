@@ -27,5 +27,17 @@ namespace Schulprojekt.Data
 
         [NotMapped]
         public McAnswer? selectedAnswer { get; set; }
+
+        // GAP: Mohammed
+        // GAP: User-Eingaben pro GapId (mehrere Lücken pro Frage)
+        [NotMapped]
+        public Dictionary<int, string> GapUserInputs { get; set; } = new();
+
+        // GAP: Bewertung pro Frage (damit Punkte nicht mehrfach addiert werden)
+        [NotMapped]
+        public bool GapEvaluated { get; set; } = false;
+
+        [NotMapped]
+        public bool GapIsCorrect { get; set; } = false;
     }
 }

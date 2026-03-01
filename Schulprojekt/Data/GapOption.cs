@@ -11,6 +11,7 @@ namespace Schulprojekt.Data
         public string OptionText { get; set; } = string.Empty;
         public bool IsCorrect { get; set; } = false;
         public int OptionOrder { get; set; }
+        //public int Points { get; set; } = 0;  // NEU Lückentext
 
         [ForeignKey(nameof(GapId))]
         [InverseProperty("GapOptions")]

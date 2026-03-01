@@ -19,6 +19,9 @@ else
     <RadzenDataList WrapItems="false" PageNumbersCount="10"
                     PageSize="1" ShowPagingSummary=true AllowPaging="true" @ref="dataList" Data="@QuestionsList" TItem="Question">
         <Template Context="x">
+            <div style="font-size:12px;color:gray; margin-bottom:6px;">
+                ID=@x.Id | Set=@(x.QuestionSet?.Id) | Type=@x.QuestionType | HasBlank=@HasBlankMarkers(x.StartText) | GapFields=@(x.GapFields?.Count ?? 0)
+            </div>
             <RadzenStack Orientation="Orientation.Horizontal">
                 <RadzenCard Style="width:600px;">
                     <!-- (Questions) -->
@@ -26,10 +29,18 @@ else
                         <RadzenRow JustifyContent="JustifyContent.Center">
                             @* <RadzenImage Path="@path" Style="width: 100px; height: 100px; border-radius: 50%;" /> *@
                         </RadzenRow>
+
                         <RadzenRow>
-                            <b>@(x.StartText)</b>
+                            @* StartText nur anzeigen, wenn NICHT GAP-inline *@
+                            @* @if (!(x.QuestionType == QuestionType.GAP && x.AllowsMultiple && HasBlankMarkers(x.StartText))) *@
+                            @if (!IsInlineGapQuestion(x))
+                            {
+                                <b>@(x.StartText)</b>
+                            }
                         </RadzenRow>
                     </RadzenStack>
+
+                    <hr />
                     <hr />
                     <!-- (Answers) -->
                     <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start" Gap="0.5rem" class="rz-p-sm-12">
@@ -45,13 +56,156 @@ else
                                 </Items>
                             </RadzenRadioButtonList>
                         }
+
+                        // == für Lückentext ====
+                        else if (IsInlineGapQuestion(x))
+                        {
+                            @* INLINE Lückentext – auch wenn QuestionType = MC *@                                                                                                                                                        
+                            var tokens = TokenizeByBlanks(x.StartText ?? "");
+                            var gaps = x.GapFields.OrderBy(g => g.GapIndex).ToList();
+                            int gi = 0;
+
+                            <div style="line-height:2.2; white-space:pre-wrap;">
+                                @foreach (var t in tokens)
+                                {
+                                    if (!t.IsBlank)
+                                    {
+                                        <span>@t.Text</span>
+                                    }
+                                    else
+                                    {
+                                        if (gi < gaps.Count)
+                                        {
+                                            var gap = gaps[gi];
+
+                                            <input type="text"
+                                                   class="gap-blank"
+                                                   size="@(Math.Max(6, GetGapText(x, gap.GapId).Length + 1))"
+                                                   style="min-width:@(CalcBlankWidthPx(t.MarkerLength))px;"
+                                                   value="@GetGapText(x, gap.GapId)"
+                                                   @oninput="(Microsoft.AspNetCore.Components.ChangeEventArgs e) => GapFreeTextEvaluating(e.Value?.ToString(), x, gap)" />
+
+                                            gi++;
+                                        }
+                                        else
+                                        {
+                                            <span style="color:red;">[Gap fehlt in DB]</span>
+                                        }
+                                    }
+                                }
+                            </div>
+                        }
+                        // Ende Block für Lückentext
+
                         else if (x.QuestionType == QuestionType.MC && x.AllowsMultiple)
                         {
                             <!-- (MultipleChoice Answers) Maxiem Aufgabe -->
                         }
-                        else if (x.QuestionType == QuestionType.GAP && x.AllowsMultiple)
+                        @* else if (x.QuestionType == QuestionType.GAP && x.AllowsMultiple) *@
+                        else if (x.QuestionType == QuestionType.GAP || IsInlineGapQuestion(x))
                         {
-                            <!-- (Lückentext Choice Answers) Mohamad oder Houman -->
+                            <!-- (Lückentext Choice Answers) Mohammed -->
+                            @if (x.GapFields == null || x.GapFields.Count == 0)
+                            {
+                                <div>Keine GapFields vorhanden…</div>
+                            }
+                            else
+                            {
+                                @* 1) INLINE wenn StartText --- oder ___ enthält *@
+                                @if (HasBlankMarkers(x.StartText))
+                                {
+                                    var tokens = TokenizeByBlanks(x.StartText ?? "");
+                                    var gaps = x.GapFields.OrderBy(g => g.GapIndex).ToList();
+                                    int gi = 0;
+
+                                    <div style="line-height:2.2; white-space:pre-wrap;">
+                                        @foreach (var t in tokens)
+                                        {
+                                            if (!t.IsBlank)
+                                            {
+                                                <span>@t.Text</span>
+                                            }
+                                            else
+                                            {
+                                                if (gi < gaps.Count)
+                                                {
+                                                    var gap = gaps[gi];
+
+                                                    <input class="gap-blank"
+                                                           style="min-width:@(CalcBlankWidthPx(t.MarkerLength))px;"
+                                                           value="@GetGapText(x, gap.GapId)"
+                                                           @oninput="(e => GapFreeTextEvaluating(((Microsoft.AspNetCore.Components.ChangeEventArgs)e).Value?.ToString(), x, gap))" />
+
+                                                    gi++;
+                                                }
+                                                else
+                                                {
+                                                    <span style="color:red;">[Gap fehlt in DB]</span>
+                                                }
+                                            }
+                                        }
+                                    </div>
+
+                                    @if (x.GapEvaluated)
+                                    {
+                                        <div style="margin-top:10px; font-weight:600;">
+                                            @(x.GapIsCorrect ? "Richtig ✅" : "Falsch ❌")
+                                        </div>
+                                    }
+
+                                    @if (!string.IsNullOrWhiteSpace(x.EndText))
+                                    {
+                                        <div><i>@x.EndText</i></div>
+                                    }
+                                }
+                                else
+                                {
+                                    @* 2) FALLBACK: deine bisherige Darstellung bleibt *@
+                                    @foreach (var gap in x.GapFields.OrderBy(g => g.GapIndex))
+                                    {
+                                        <div style="margin-bottom:12px; width:100%;">
+                                            <div style="font-weight:600; margin-bottom:4px;">
+                                                Lücke @(gap.GapIndex + 1)
+                                            </div>
+
+                                            @if (gap.InputType == GapInputType.CHOICE)
+                                            {
+                                                <RadzenRadioButtonList TValue="int"
+                                                                       Value="@(GetSelectedGapOptionId(x, gap.GapId))"
+                                                                       Change="@(value => GapChoiceEvaluating((int)value, x, gap))"
+                                                                       Orientation="Orientation.Vertical">
+                                                    <Items>
+                                                        @foreach (var opt in gap.GapOptions.OrderBy(o => o.OptionOrder))
+                                                        {
+                                                            <RadzenRadioButtonListItem Text="@opt.OptionText" Value="@opt.GapOptionId" />
+                                                        }
+                                                    </Items>
+                                                </RadzenRadioButtonList>
+                                            }
+                                            else if (gap.InputType == GapInputType.FREE_TEXT)
+                                            {
+                                                <RadzenTextBox Style="width:100%;"
+                                                               Placeholder="Antwort eingeben…"
+                                                               Value="@(GetGapText(x, gap.GapId))"
+                                                               Change="@(value => GapFreeTextEvaluating(value?.ToString(), x, gap))" />
+                                            }
+                                        </div>
+                                    }
+
+                                    @if (x.GapEvaluated)
+                                    {
+                                        <div style="margin-top:10px; font-weight:600;">
+                                            @(x.GapIsCorrect ? "Richtig ✅" : "Falsch ❌")
+                                        </div>
+                                    }
+
+                                    @if (!string.IsNullOrWhiteSpace(x.EndText))
+                                    {
+                                        <div><i>@x.EndText</i></div>
+                                    }
+                                }
+                            }
+
                         }
                     </RadzenStack>
                 </RadzenCard>
@@ -62,7 +216,7 @@ else
            
         </Template>
     </RadzenDataList>
-    @if (QuestionsList != null && QuestionsList.All(x => x.selectedAnswer != null))
+    @if (QuestionsList != null && QuestionsList.All(q => IsQuestionAnswered(q)))
     {
         <RadzenButton Variant="Variant.Flat" Text="Abgeben" Click="QuizAccomplisched" ButtonStyle="ButtonStyle.Success" />
     }
@@ -112,6 +266,10 @@ else
         foreach (var question in QuestionsList)
         {
             question.selectedAnswer = null;
+            // GAP Reset (Mohammed)
+            question.GapUserInputs.Clear();
+            question.GapEvaluated = false;
+            question.GapIsCorrect = false;
         }
 
         StateHasChanged();
@@ -153,7 +311,7 @@ else
     async Task loadData(int questionSetId)
     {
         QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(questionSetId)).ToList();
-        QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.TF).ToList(); // Temprory bcause the other Answers not yet made.
+        // QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.TF).ToList(); // Temprory bcause the other Answers not yet made.
     }
 
     /// <summary>
@@ -198,6 +356,10 @@ else
             foreach(var question in QuestionsList)
             {
                 question.selectedAnswer = null; // Reset antworten.
+                // GAP Reset (Mohammed)
+                question.GapUserInputs.Clear();
+                question.GapEvaluated = false;
+                question.GapIsCorrect = false;
             }
 
             barValue = 0;
@@ -213,4 +375,201 @@ else
             }
         }
     }
+
+    
+    // ===== Mohammed Teil: Lueckentext (GAP Choice) =====
+
+    int GetSelectedGapOptionId(Question question, int gapId)
+    {
+        if (question.GapUserInputs.TryGetValue(gapId, out var v) && int.TryParse(v, out var id))
+            return id;
+
+        return 0; // 0 = nichts gewählt
+    }
+
+    void GapChoiceEvaluating(int selectedGapOptionId, Question question, GapField gap)
+    {
+        if (selectedGapOptionId <= 0)
+            return;
+
+        // Auswahl speichern: GapId -> GapOptionId
+        question.GapUserInputs[gap.GapId] = selectedGapOptionId.ToString();
+
+        // Erst werten, wenn ALLE CHOICE-Lücken beantwortet sind
+        var choiceGaps = question.GapFields.Where(g => g.InputType == GapInputType.CHOICE).ToList();
+        if (choiceGaps.Count == 0)
+            return;
+
+        bool allFilled = choiceGaps.All(g => question.GapUserInputs.ContainsKey(g.GapId) && !string.IsNullOrWhiteSpace(question.GapUserInputs[g.GapId]));
+        if (!allFilled)
+            return;
+
+        // Nur 1x pro Frage bewerten (damit Punkte nicht doppelt)
+        if (question.GapEvaluated)
+            return;
+
+        bool allCorrect = true;
+
+        foreach (var g in choiceGaps)
+        {
+            int chosenId = int.Parse(question.GapUserInputs[g.GapId]);
+            var chosen = g.GapOptions.FirstOrDefault(o => o.GapOptionId == chosenId);
+
+            if (chosen == null || !chosen.IsCorrect)
+            {
+                allCorrect = false;
+                break;
+            }
+        }
+
+        question.GapEvaluated = true;
+        question.GapIsCorrect = allCorrect;
+
+        if (allCorrect)
+        {
+            // 1 Punkt pro Lücke
+            playerPoints += choiceGaps.Count;
+        }
+        else
+        {
+            if (!wrongAnsweredQuestions.Contains(question))
+                wrongAnsweredQuestions.Add(question);
+        }
+
+    }
+    // ===== Teil: Lueckentext (GAP FREE_TEXT) =====
+    string GetGapText(Question question, int gapId)
+    {
+        return question.GapUserInputs.TryGetValue(gapId, out var v) ? v : "";
+    }
+
+    void GapFreeTextEvaluating(string? input, Question question, GapField gap)
+    {
+        input ??= "";
+        question.GapUserInputs[gap.GapId] = input;
+
+        // Nur FREE_TEXT Lücken bewerten
+        var freeGaps = question.GapFields.Where(g => g.InputType == GapInputType.FREE_TEXT).ToList();
+        if (freeGaps.Count == 0)
+            return;
+
+        // erst werten, wenn alle FREE_TEXT Lücken gefüllt sind
+        bool allFilled = freeGaps.All(g => question.GapUserInputs.ContainsKey(g.GapId)
+                                           && !string.IsNullOrWhiteSpace(question.GapUserInputs[g.GapId]));
+        if (!allFilled)
+            return;
+
+        // Nur 1x pro Frage bewerten
+        if (question.GapEvaluated)
+            return;
+
+        bool allCorrect = true;
+
+        foreach (var g in freeGaps)
+        {
+            var userText = (question.GapUserInputs[g.GapId] ?? "").Trim();
+            var correctText = (g.CorrectText ?? "").Trim();
+
+            if (!g.CaseSensitive)
+            {
+                userText = userText.ToLowerInvariant();
+                correctText = correctText.ToLowerInvariant();
+            }
+
+            if (userText != correctText)
+            {
+                allCorrect = false;
+                break;
+            }
+        }
+
+        question.GapEvaluated = true;
+        question.GapIsCorrect = allCorrect;
+
+        if (allCorrect)
+        {
+            // playerPoints += freeGaps.Sum(g => g.Points); Punkt pro Lücke
+            playerPoints += freeGaps.Count; // 1 Punkt pro Lücke
+        }
+        else
+        {
+            if (!wrongAnsweredQuestions.Contains(question))
+                wrongAnsweredQuestions.Add(question);
+        }
+
+        if (!answeredQuestions.Contains(question.Id))
+        {
+            barValue++;
+            answeredQuestions.Add(question.Id);
+        }
+    }
+
+      // für Lückentext 
+    class BlankToken
+    {
+        public bool IsBlank { get; set; }
+        public string Text { get; set; } = "";
+        public int MarkerLength { get; set; }
+    }
+
+    bool HasBlankMarkers(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        // return System.Text.RegularExpressions.Regex.IsMatch(text, "[-_]{3,}");
+        return System.Text.RegularExpressions.Regex.IsMatch(text, "[-_＿]{3,}");
+    }
+
+    List<BlankToken> TokenizeByBlanks(string text)
+    {
+        var tokens = new List<BlankToken>();
+        // var regex = new System.Text.RegularExpressions.Regex("[-_]{3,}");
+        var regex = new System.Text.RegularExpressions.Regex("[-_＿]{3,}");
+        int last = 0;
+
+        foreach (System.Text.RegularExpressions.Match m in regex.Matches(text))
+        {
+            if (m.Index > last)
+            {
+                tokens.Add(new BlankToken { IsBlank = false, Text = text.Substring(last, m.Index - last) });
+            }
+
+            tokens.Add(new BlankToken { IsBlank = true, MarkerLength = m.Length });
+            last = m.Index + m.Length;
+        }
+
+        if (last < text.Length)
+        {
+            tokens.Add(new BlankToken { IsBlank = false, Text = text.Substring(last) });
+        }
+
+        return tokens;
+    }
+
+    int CalcBlankWidthPx(int markerLength)
+    {
+        int width = markerLength * 10;
+        if (width < 80) width = 80;
+        if (width > 260) width = 260;
+        return width;
+    }
+
+    bool IsInlineGapQuestion(Question q)
+    {
+        return HasBlankMarkers(q.StartText) && (q.GapFields?.Count > 0);
+    }
+
+
+    bool IsQuestionAnswered(Question q)
+    {
+        if (q.QuestionType == QuestionType.TF)
+            return q.selectedAnswer != null;
+
+        if (q.QuestionType == QuestionType.GAP || IsInlineGapQuestion(q))
+            return q.GapEvaluated;   // erst true wenn Lücken bewertet wurden
+
+        // MC später
+        return false;
+    }
+
+  
 }

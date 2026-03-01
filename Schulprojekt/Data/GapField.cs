@@ -13,6 +13,7 @@ namespace Schulprojekt.Data
         public GapInputType InputType { get; set; } = GapInputType.FREE_TEXT;
         public string? CorrectText { get; set; }
         public bool CaseSensitive { get; set; } = false;
+        //public int Points { get; set; } = 1;  // NEU für Lückentext
 
         [ForeignKey(nameof(QuestionId))]
         [InverseProperty("GapFields")]

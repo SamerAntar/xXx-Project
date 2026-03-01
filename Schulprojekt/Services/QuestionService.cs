@@ -35,6 +35,7 @@ namespace Schulprojekt.Services
                     .Include(x => x.QuestionSet)
                     .Include(x => x.Themes)
                     .Include(x => x.GapFields)
+                       .ThenInclude(g => g.GapOptions)
                     .ToListAsync();
             }
             catch (Exception)
@@ -52,7 +53,8 @@ namespace Schulprojekt.Services
                     .Include(x => x.QuestionSet)
                     .Include(x => x.Themes)
                     .Include(x => x.GapFields)
-                    .Where(x => x.QuestionSet.Id == questionSetID)
+                       .ThenInclude(g => g.GapOptions)
+                    .Where(x => x.QuestionSetId == questionSetID)
                     .ToListAsync();
             }
             catch (Exception)
