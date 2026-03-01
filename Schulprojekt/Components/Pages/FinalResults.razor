@@ -1,6 +1,7 @@
 ﻿@page "/FinalResults"
 @page "/FinalResults/SpielerID={SpielerId:int}/QuestionSetID={QuestionSetId:int}"
 @inject IQuestionSetService questionSetService
+@inject FinalResultStateService finalResultStateService
 @using Schulprojekt.Data
 @using Schulprojekt.Services
 @inject NavigationManager Navi
@@ -37,9 +38,7 @@
                 <RadzenText Style="font-size:18px;">
                     @MotivationText
                 </RadzenText>
-
             </RadzenStack>
-
         </RadzenCard>
 
         <!-- CHART -->
@@ -47,7 +46,7 @@
             <RadzenHeading Size="H4">Performance Overview</RadzenHeading>
 
             <RadzenChart Style="height:350px;">
-                <RadzenColumnSeries Data="@TopicResults"
+                <RadzenColumnSeries Data="@TopicResults2"
                                     CategoryProperty="Topic"
                                     ValueProperty="Percent" />
                 <RadzenCategoryAxis />
@@ -120,12 +119,14 @@
 @code {
 
     // Beispielwerte (später aus Service übergeben)
-    int TotalPoints = 320;
+    int TotalPoints = 400;
     int MaxPoints = 400;
 
     [Parameter] public int? PlayerPoints { get; set; }
     [Parameter] public int? SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
+
+    List<TopicResult> TopicResults2 = new();
 
     List<QuestionSet> questionSets = new();
 
@@ -160,24 +161,22 @@
 
     protected override async Task OnInitializedAsync()
     {
-        questionSets = (await questionSetService.GetAllEntriesIncludingNavigationsAsync()).ToList();
+        questionSets = (await questionSetService.GetAllEntriesByTeamIDIncludingNavigationsAsync(1)).ToList();
 
-        foreach (var item in questionSets)
-        {
-            foreach(var topic in TopicResults)
+        TopicResults2 = questionSets.Select(x => new TopicResult
             {
-                    topic.Topic = item.Title;
-            }
-        }
-
-        var sam = TopicResults;
-        var s = 99;
+                Topic = x.Title,
+                Percent = 70
+            }).ToList();
     }
 
 
 
     List<TopicResult> TopicResults = new()
     {
+
+        
+
         new TopicResult { Points = 80, MaxPoints = 100, Percent = 80 },
         new TopicResult { Points = 70, MaxPoints = 100, Percent = 70 },
         new TopicResult { Points = 90, MaxPoints = 100, Percent = 90 },
@@ -201,4 +200,5 @@
         public int MaxPoints { get; set; }
         public int Percent { get; set; }
     }
+
 }
