@@ -47,7 +47,15 @@ else
                         }
                         else if (x.QuestionType == QuestionType.MC && x.AllowsMultiple)
                         {
-                            <!-- (MultipleChoice Answers) Maxiem Aufgabe -->
+                                <!-- (MultipleChoice Answers) -->
+                            <RadzenCheckBoxList Value=@x.selectMultiAnswers TValue="McAnswer" Change="@((IEnumerable<McAnswer> value) => OnChangeMultipleChoice(x, value))" Orientation="Orientation.Vertical">
+                                    <Items>
+                                        @foreach (var antwort in x.McAnswers)
+                                        {
+                                            <RadzenCheckBoxListItem Text="@antwort.OptionText" Value="@antwort" />
+                                        }
+                                    </Items>
+                                </RadzenCheckBoxList> 
                         }
                         else if (x.QuestionType == QuestionType.GAP && x.AllowsMultiple)
                         {
@@ -62,7 +70,7 @@ else
            
         </Template>
     </RadzenDataList>
-    @if (QuestionsList != null && QuestionsList.All(x => x.selectedAnswer != null))
+    @if (QuestionsList != null && (QuestionsList.All(x => x.selectedAnswer != null) || QuestionsList.All(x => x.selectMultiAnswers != null && x.selectMultiAnswers.Count > 0)))
     {
         <RadzenButton Variant="Variant.Flat" Text="Abgeben" Click="QuizAccomplisched" ButtonStyle="ButtonStyle.Success" />
     }
@@ -94,12 +102,14 @@ else
     double barValue = 0;
 
     int playerPoints = 0;
+    int tempMcPoints = 0;
     string pageTitle = "";
     string quizFoto = "";
 
     bool quizDone = false;
 
     McAnswer? selectedSingleChoiceAnswer;
+    HashSet<int> previousSelectedMultipleAnswerIDs = new HashSet<int>();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -160,6 +170,7 @@ else
     /// Singlechoice Evaluating
     /// </summary>
     /// <param name="value"></param>
+    /// <author>Samer</author>
     void SinglechoiceEvaluating(McAnswer value, Question question)
     {
         if (value is null)
@@ -186,6 +197,8 @@ else
 
     void QuizAccomplisched()
     {
+        tempMcPoints = tempMcPoints < 0 ? 0 : tempMcPoints; //no negative Points
+        playerPoints += tempMcPoints; //add MC-Points to whole player points
         quizDone = true;  
     }
 
@@ -206,11 +219,83 @@ else
             quizDone = false;
 
             await InvokeAsync(StateHasChanged);
-          
+
             if(dataList != null)
             {
                 await dataList.FirstPage(true);  // show first Wrong Question.
             }
         }
     }
+
+    #region MultipleChoice
+    /// <summary>
+    /// Collect all checked boxes in a list and execute the evaluation
+    /// </summary>
+    /// <param name="question"></param>
+    /// <param name="value"></param>
+    /// <author>Maxim</author>
+    private void OnChangeMultipleChoice(Question question, IEnumerable<McAnswer> value)
+    {
+        question.selectMultiAnswers = value?.ToList() ?? new List<McAnswer>();
+        MultiplechoiceEvaluating(value, question);
+    }
+
+    /// <summary>
+    /// Multiple Choice Evaluating
+    /// </summary>
+    /// <param name="selectedAnswers"></param>
+    /// <param name="question"></param>
+    /// <author>Maxim</author>
+    void MultiplechoiceEvaluating(IEnumerable<McAnswer> selectedAnswers, Question question)
+    {
+        int points = 0;
+        bool hasWrong = false;
+
+        foreach(var answerOptions in question.McAnswers)
+        {
+            //Option was checked now
+            if (!previousSelectedMultipleAnswerIDs.Contains(answerOptions.Id) && selectedAnswers.Any(sA => sA.Id == answerOptions.Id))
+            {
+                previousSelectedMultipleAnswerIDs.Add(answerOptions.Id); //memorize that answer was selected
+                if (answerOptions.IsCorrect)
+                    points += answerOptions.Points;
+                else {
+                    points -= answerOptions.Points;
+                    hasWrong = true;
+                }
+
+            }
+            //Option was UNchecked now
+            else if (previousSelectedMultipleAnswerIDs.Contains(answerOptions.Id) && !selectedAnswers.Any(sA => sA.Id == answerOptions.Id))
+            {
+                previousSelectedMultipleAnswerIDs.Remove(answerOptions.Id); //remove memorize that answer was selected
+                //reverse points
+                if (answerOptions.IsCorrect) {
+                    points -= answerOptions.Points;
+                    hasWrong = true;
+                }
+                else
+                    points += answerOptions.Points;
+            }
+            //Option is correct, but not checked by the player
+            else if (!selectedAnswers.Any(sA => sA.Id == answerOptions.Id) && answerOptions.IsCorrect)
+                hasWrong = true;
+
+        }
+
+        tempMcPoints += points;
+
+        //player has selected a wrong answer or not all correct answer
+        if (hasWrong && !wrongAnsweredQuestions.Contains(question))
+            wrongAnsweredQuestions.Add(question);
+        else if (!hasWrong && wrongAnsweredQuestions.Contains(question))
+            wrongAnsweredQuestions.Remove(question);
+
+        if (!answeredQuestions.Contains(question.Id))
+        {
+            barValue++;
+            answeredQuestions.Add(question.Id);
+        }
+    }
+    #endregion
 }
