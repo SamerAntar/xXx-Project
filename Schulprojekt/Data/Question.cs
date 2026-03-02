@@ -25,6 +25,9 @@ namespace Schulprojekt.Data
         public ICollection<GapField> GapFields { get; set; } = new List<GapField>();
 
         [NotMapped]
-        public McAnswer? selectedAnswer { get; set; }
+        public McAnswer? selectedAnswer { get; set; } //SingleChoice
+
+        [NotMapped]
+        public IList<McAnswer> selectMultiAnswers { get; set; } = new List<McAnswer>();  // MultiChoice
     }
 }
