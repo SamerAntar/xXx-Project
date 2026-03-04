@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Schulprojekt.Data;
 
@@ -10,9 +11,11 @@ using Schulprojekt.Data;
 namespace Schulprojekt.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260304192940_SEEDER_Themen_New")]
+    partial class SEEDER_Themen_New
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,9 +161,6 @@ namespace Schulprojekt.Migrations
                     b.Property<int>("TeamId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ThemaId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -169,8 +169,6 @@ namespace Schulprojekt.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("TeamId");
-
-                    b.HasIndex("ThemaId");
 
                     b.ToTable("QuestionSets");
                 });
@@ -264,15 +262,7 @@ namespace Schulprojekt.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Schulprojekt.Data.Thema", "Thema")
-                        .WithMany("QuestionSets")
-                        .HasForeignKey("ThemaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Team");
-
-                    b.Navigation("Thema");
                 });
 
             modelBuilder.Entity("Schulprojekt.Data.GapField", b =>
@@ -293,11 +283,6 @@ namespace Schulprojekt.Migrations
                 });
 
             modelBuilder.Entity("Schulprojekt.Data.Team", b =>
-                {
-                    b.Navigation("QuestionSets");
-                });
-
-            modelBuilder.Entity("Schulprojekt.Data.Thema", b =>
                 {
                     b.Navigation("QuestionSets");
                 });

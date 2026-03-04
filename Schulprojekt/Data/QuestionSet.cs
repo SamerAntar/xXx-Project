@@ -11,7 +11,12 @@ namespace Schulprojekt.Data
         [MaxLength(255)]
         public string Title { get; set; } = string.Empty;
         public int TeamId { get; set; }
+        public int ThemaId { get; set; }
 
+        [ForeignKey(nameof(ThemaId))]
+        [InverseProperty("QuestionSets")]
+        public Thema? Thema { get; set; }
+        
         [ForeignKey(nameof(TeamId))]
         [InverseProperty("QuestionSets")]
         public Team? Team { get; set; }
