@@ -94,7 +94,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        SpielerList = await SpielerService.GetAllPlayers();
+        SpielerList = (await SpielerService.GetAllPlayers()).ToList();
         ThemenList = (await ThemaService.GetAllEntriesIncludingNavigationsAsync()).ToList();
     }
 

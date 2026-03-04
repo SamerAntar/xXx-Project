@@ -1,31 +1,42 @@
-﻿using Schulprojekt.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Schulprojekt.Data;
 
 namespace Schulprojekt.Services
 {
     public class SpielerService : ISpielerService
     {
-        public async Task<List<Spieler>> GetAllPlayers()
+        /// <summary>
+        /// Reference to the dbContext in the ContextPage.
+        /// Reference is set during construction and is readonly.
+        /// </summary>
+        private readonly ApplicationDbContext dbContext;
+
+        /// <summary>
+        /// Constructor of the service.
+        /// Should only be instantiated in the ContextPage.
+        /// </summary>
+        /// <param name="dbContext">A reference to the private dbContext in the ContextPage.</param>
+        public SpielerService(ApplicationDbContext dbContext)
         {
-            List<Spieler> players = new List<Spieler>()
+            this.dbContext = dbContext;
+        }
+
+        /// <summary>
+        /// Default constructor required for mocking
+        /// </summary>
+        public SpielerService() { }
+
+        public virtual async Task<IEnumerable<Spieler>> GetAllPlayers()
+        {
+            try
             {
-                new Spieler()
-                {
-                    Id = 1,
-                    Name = "Hisoka"
-                },
-                new Spieler()
-                {
-                    Id= 2,
-                    Name = "Gone"
-                },
-                new Spieler()
-                {
-                    Id= 3,
-                    Name = "Kilwa"
-                }
-            };
-            
-            return players.ToList();
+                return await dbContext.Players
+                    .ToListAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }
