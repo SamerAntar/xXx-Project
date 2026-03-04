@@ -56,5 +56,22 @@ namespace Schulprojekt.Services
                 throw;
             }
         }
+
+        public virtual async Task<IEnumerable<QuestionSet>> GetEntriesByThemaKeyIncludingNavigationsAsync(int themaId)
+        {
+            try
+            {
+                return await dbContext.QuestionSets
+                    .Include(x => x.Questions)
+                    .Include(x => x.Team)
+                    .Include(x => x.Thema)
+                    .Where(x => x.TeamId == themaId)
+                    .ToListAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 }

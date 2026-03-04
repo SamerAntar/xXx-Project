@@ -1,24 +1,44 @@
 ﻿@page "/"
 @using Schulprojekt.Data
 @using Schulprojekt.Services
-@inject ISpielerService spielerService
-@inject IQuestionSetService questionSetService
+@inject ISpielerService SpielerService
+@inject IQuestionSetService QuestionSetService
+@inject IThemaService ThemaService
 @inject NotificationService NotificationService
 @inject NavigationManager Navi
 
 <PageTitle>Homepage</PageTitle>
 
-
 <div class="home-background" style="background-image: url('/images/HomeMain.png')">
     <div class="home-content">
         <h2>Willkommen beim Hunter X Hunter Spiel</h2>
+        <div style="display:flex; justify-content:center; margin-top:40px;">
+            <div style="width:300px;">
+                <!-- #Row 1 DropdownList (Themen) -->
+                <RadzenDropDown AllowClear="false"
+                                Placeholder="--Bitte Thema auswählen--"
+                                TValue="Thema"
+                                Data="@ThemenList"
+                                TextProperty="Name"
+                                @bind-Value="selectedthema"
+                                Change="LoadQuestionSet" />
+                @if (IsThemeMissing())
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                                 Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark"
+                                 Style="width:90%">
+                        Thema ist erforderlich!
+                    </RadzenAlert>
+                }
+            </div>
+        </div>
         <div style="display:flex; justify-content:center; margin-top:20px;">
             <div style="width:300px;">
-                <!-- #Row 1 DropdownList (Spielers) -->
+                <!-- #Row 2 DropdownList (Spielers) -->
                 <RadzenDropDown AllowClear="true"
                                 Placeholder="--Bitte Spieler auswählen--"
                                 TValue="Spieler"
-                                Data="@spielers"
+                                Data="@SpielerList"
                                 TextProperty="Name"
                                 @bind-Value="selectedPlayer" />
                 @if (IsPlayerMissing())
@@ -31,11 +51,11 @@
                 }
             </div>
             <div style="width:300px;">
-                <!-- #Row 1 DropdownList (QuestionSet) -->
+                <!-- #Row 2 DropdownList (QuestionSet) -->
                 <RadzenDropDown Placeholder="--Bitte Quiz auswählen--"
                                 AllowClear="true"
                                 TValue="QuestionSet"
-                                Data="@questionSets"
+                                Data="@QuestionSetsList"
                                 TextProperty="Title"
                                 @bind-Value="selectedQuestionSet" />
                 @if (IsQuestionSetMissing())
@@ -64,16 +84,18 @@
 
 @code {
 
-    List<Spieler> spielers = new();
-    List<QuestionSet> questionSets = new();
+    List<Spieler> SpielerList = new();
+    List<QuestionSet> QuestionSetsList = new();
+    List<Thema> ThemenList = new();
     Spieler? selectedPlayer;
     QuestionSet? selectedQuestionSet;
+    Thema? selectedthema;
 
 
     protected override async Task OnInitializedAsync()
     {
-        spielers = await spielerService.GetAllPlayers();
-        questionSets = (await questionSetService.GetAllEntriesIncludingNavigationsAsync()).ToList();
+        SpielerList = await SpielerService.GetAllPlayers();
+        ThemenList = (await ThemaService.GetAllEntriesIncludingNavigationsAsync()).ToList();
     }
 
     /// <summary>
@@ -89,6 +111,12 @@
     private bool IsQuestionSetMissing() => string.IsNullOrEmpty(selectedQuestionSet?.Title);
 
     /// <summary>
+    /// QuestionSet Validation.
+    /// </summary>
+    /// <returns></returns>
+    private bool IsThemeMissing() => string.IsNullOrEmpty(selectedthema?.Name);
+
+    /// <summary>
     /// Navigate to the
     /// </summary>
     private void GoQuizPage()
@@ -99,11 +127,23 @@
                 { 
                     Severity = NotificationSeverity.Info, 
                     Summary = "Fehlende Eingaben", 
-                    Detail = "bitte Spieler und Quiz auswählen" });
+                    Detail = "bitte Thema, Spieler und Quiz auswählen" });
 
             return;
         }
 
         Navi.NavigateTo($"/Quiz/SpielerID={selectedPlayer.Id}/QuizID={selectedQuestionSet.Id}");
+    }
+
+    async Task LoadQuestionSet()
+    {
+        if (selectedthema is not null)
+        {
+            QuestionSetsList = (await QuestionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(selectedthema.Id)).ToList();
+        }
+        else
+        {
+            QuestionSetsList.Clear();
+        }
     }
 }
