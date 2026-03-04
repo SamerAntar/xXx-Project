@@ -34,13 +34,8 @@
         </div>
         <div style="display:flex; justify-content:center; margin-top:20px;">
             <div style="width:300px;">
-                <!-- #Row 2 DropdownList (Spielers) -->
-                <RadzenDropDown AllowClear="true"
-                                Placeholder="--Bitte Spieler auswählen--"
-                                TValue="Spieler"
-                                Data="@SpielerList"
-                                TextProperty="Name"
-                                @bind-Value="selectedPlayer" />
+                <!-- #Row 2 TextFeld (Spieler) -->
+                <RadzenTextBox @bind-Value="playerName" Placeholder="Spielername eingeben" Style="width:275px;" />
                 @if (IsPlayerMissing())
                 {
                     <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
@@ -69,7 +64,7 @@
             </div>
         </div>     
         <div style="display:flex; justify-content:center; margin-top:40px;">
-            <RadzenButton Variant="Variant.Flat" Click="GoQuizPage" Text="Quiz starten" ButtonStyle="ButtonStyle.Success" />
+            <RadzenButton Variant="Variant.Flat" Click="StartGame" Text="Quiz starten" ButtonStyle="ButtonStyle.Success" />
         </div>
     </div>
     <RadzenImage Path="/images/Hisokaaa.png"
@@ -87,14 +82,13 @@
     List<Spieler> SpielerList = new();
     List<QuestionSet> QuestionSetsList = new();
     List<Thema> ThemenList = new();
-    Spieler? selectedPlayer;
     QuestionSet? selectedQuestionSet;
     Thema? selectedthema;
 
+    string playerName = "";
 
     protected override async Task OnInitializedAsync()
     {
-        SpielerList = (await SpielerService.GetAllPlayers()).ToList();
         ThemenList = (await ThemaService.GetAllEntriesIncludingNavigationsAsync()).ToList();
     }
 
@@ -102,7 +96,7 @@
     /// Player Validation.
     /// </summary>
     /// <returns></returns>
-    private bool IsPlayerMissing() => string.IsNullOrEmpty(selectedPlayer?.Name);
+    private bool IsPlayerMissing() => string.IsNullOrWhiteSpace(playerName);
 
     /// <summary>
     /// QuestionSet Validation.
@@ -119,9 +113,9 @@
     /// <summary>
     /// Navigate to the
     /// </summary>
-    private void GoQuizPage()
+    async Task StartGame()
     {
-        if (selectedPlayer is null || selectedQuestionSet is null)
+        if (string.IsNullOrWhiteSpace(playerName) || selectedQuestionSet is null)
         {
             NotificationService.Notify(new NotificationMessage 
                 { 
@@ -132,7 +126,13 @@
             return;
         }
 
-        Navi.NavigateTo($"/Quiz/SpielerID={selectedPlayer.Id}/QuizID={selectedQuestionSet.Id}");
+        var spieler = new Spieler { Name = playerName };
+        var savedPlayer = await SpielerService.AddOrUpdateAsync(spieler);
+
+        if(savedPlayer is not null)
+        {
+            Navi.NavigateTo($"/Quiz/SpielerID={savedPlayer.Id}/QuizID={selectedQuestionSet.Id}");
+        }
     }
 
     async Task LoadQuestionSet()
