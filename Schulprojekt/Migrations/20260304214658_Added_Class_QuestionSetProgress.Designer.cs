@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Schulprojekt.Data;
 
@@ -11,9 +12,11 @@ using Schulprojekt.Data;
 namespace Schulprojekt.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260304214658_Added_Class_QuestionSetProgress")]
+    partial class Added_Class_QuestionSetProgress
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -205,22 +208,6 @@ namespace Schulprojekt.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("QuestionSetProgresses");
-                });
-
-            modelBuilder.Entity("Schulprojekt.Data.Spieler", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Players");
                 });
 
             modelBuilder.Entity("Schulprojekt.Data.Team", b =>
