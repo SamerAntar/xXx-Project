@@ -11,7 +11,7 @@ namespace Schulprojekt.Data
         public DbSet<GapField> GapFields { get; set; }
         public DbSet<GapOption> GapOptions { get; set; }
         public DbSet<McAnswer> McAnswers { get; set; }
-        public DbSet<Theme> Themes { get; set; }
+        public DbSet<Thema> Themen { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
