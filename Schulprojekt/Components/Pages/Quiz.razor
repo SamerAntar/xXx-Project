@@ -72,7 +72,7 @@ else
            
         </Template>
     </RadzenDataList>
-    @if (QuestionsList != null && (QuestionsList.All(x => x.selectedAnswer != null) || QuestionsList.All(x => x.selectMultiAnswers != null && x.selectMultiAnswers.Count > 0)))
+    @if (QuestionsList != null && (QuestionsList.All(x => x.selectedAnswer != null || x.selectMultiAnswers != null && x.selectMultiAnswers.Count > 0)) && !quizDone)
     {
         <RadzenButton Variant="Variant.Flat" Text="Abgeben" Click="QuizAccomplisched" ButtonStyle="ButtonStyle.Success" />
     }
@@ -92,7 +92,7 @@ else
 }
 
 
-@code {
+@code { 
     [Parameter] public int? SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
 
@@ -118,6 +118,8 @@ else
         quizDone = false;
         barValue = 0;
         answeredQuestions.Clear();
+        pointsPerQuestion.Clear(); 
+        previousSelectedMultipleAnswerIDs.Clear();
 
         await determinQuizData();
 
@@ -169,7 +171,7 @@ else
     async Task loadData(int questionSetId)
     {
         QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(questionSetId)).ToList();
-        QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.MC).ToList(); // Temprory bcause the other Answers not yet made.
+        QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.MC || x.QuestionType == QuestionType.TF).ToList(); // Temprory bcause the other Answers not yet made.
     }
 
     async Task<QuestionSet> loadQuestionSet(int questionSetId)
@@ -196,15 +198,9 @@ else
         {
             foreach (var question in QuestionsList)
             {
-                foreach(var answer in question.McAnswers)
+                if (question.QuestionType == QuestionType.MC && wrongAnsweredQuestions.Contains(question) && (pointsPerQuestion.ContainsKey(question.Id) ? pointsPerQuestion[question.Id] > 0 : false))
                 {
-                    if (previousSelectedMultipleAnswerIDs.Contains(answer.Id))
-                    {
-                        if (answer.IsCorrect) 
-                            playerPoints -= 1; //remove given Points for wrong question
-                       else 
-                            playerPoints += 1;
-                    }
+                    playerPoints -= pointsPerQuestion[question.Id]; //for Multiple Choice: remove given Points for wrong question (negative value skipped, they are nnot added prevoiusly anyway)
                 }
                  question.selectMultiAnswers.Clear(); //reset checked box
             }
