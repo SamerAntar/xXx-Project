@@ -104,7 +104,7 @@ else
     double barValue = 0;
 
     int playerPoints = 0;
-    int tempMcPoints = 0;
+    Dictionary<int, int> pointsPerQuestion = new Dictionary<int, int>();
     string pageTitle = "";
     string quizFoto = "";
 
@@ -169,7 +169,7 @@ else
     async Task loadData(int questionSetId)
     {
         QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(questionSetId)).ToList();
-        QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.TF).ToList(); // Temprory bcause the other Answers not yet made.
+        QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.MC).ToList(); // Temprory bcause the other Answers not yet made.
     }
 
     async Task<QuestionSet> loadQuestionSet(int questionSetId)
@@ -178,39 +178,15 @@ else
         return questionSet;
     }
 
-    /// <summary>
-    /// Singlechoice Evaluating
-    /// </summary>
-    /// <param name="value"></param>
-    /// <author>Samer</author>
-    void SinglechoiceEvaluating(McAnswer value, Question question)
-    {
-        if (value is null)
-            return;
-
-        if (value.IsCorrect)
-        {
-            playerPoints += value.Points;
-        }
-        else
-        {
-            if(!wrongAnsweredQuestions.Contains(question))
-            {
-                wrongAnsweredQuestions.Add(question);
-            }
-        }
-
-        if(!answeredQuestions.Contains(question.Id))
-        {
-            barValue++;
-            answeredQuestions.Add(question.Id);
-        }
-    }
-
     void QuizAccomplisched()
     {
-        tempMcPoints = tempMcPoints < 0 ? 0 : tempMcPoints; //no negative Points
-        playerPoints += tempMcPoints; //add MC-Points to whole player points
+        foreach(var questionId in pointsPerQuestion)
+        {
+            if (questionId.Value < 0)
+                playerPoints += 0;
+            else 
+                playerPoints += questionId.Value; //add MC-Points to whole player points
+        }
         quizDone = true;  
     }
 
@@ -218,6 +194,22 @@ else
     {
         if(wrongAnsweredQuestions.Any())
         {
+            foreach (var question in QuestionsList)
+            {
+                foreach(var answer in question.McAnswers)
+                {
+                    if (previousSelectedMultipleAnswerIDs.Contains(answer.Id))
+                    {
+                        if (answer.IsCorrect) 
+                            playerPoints -= 1; //remove given Points for wrong question
+                       else 
+                            playerPoints += 1;
+                    }
+                }
+                 question.selectMultiAnswers.Clear(); //reset checked box
+            }
+            pointsPerQuestion.Clear(); //reset all gained Points; evalaluation should start all over again
+            previousSelectedMultipleAnswerIDs.Clear();//reset selected Answers; Muliple choice evalaluation should start all over again
             QuestionsList = wrongAnsweredQuestions.ToList();
 
             foreach(var question in QuestionsList)
@@ -238,6 +230,37 @@ else
             }
         }
     }
+    #region SingleChoice
+    /// <summary>
+    /// Singlechoice Evaluating
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="question"></param> 
+    /// <author>Samer</author>
+    void SinglechoiceEvaluating(McAnswer value, Question question)
+    {
+        if (value is null)
+            return;
+
+        if (value.IsCorrect)
+        {
+            handleAddPoints(question.Id, value.Points);
+        }
+        else
+        {
+            if (!wrongAnsweredQuestions.Contains(question))
+            {
+                wrongAnsweredQuestions.Add(question);
+            }
+        }
+
+        if (!answeredQuestions.Contains(question.Id))
+        {
+            barValue++;
+            answeredQuestions.Add(question.Id);
+        }
+    }
+    #endregion
 
     #region MultipleChoice
     /// <summary>
@@ -272,7 +295,7 @@ else
                 if (answerOptions.IsCorrect)
                     points += answerOptions.Points;
                 else {
-                    points -= answerOptions.Points;
+                    points -= 1;//answerOptions.Points;
                     hasWrong = true;
                 }
 
@@ -287,15 +310,18 @@ else
                     hasWrong = true;
                 }
                 else
-                    points += answerOptions.Points;
+                    points += 1; //answerOptions.Points;
             }
             //Option is correct, but not checked by the player
             else if (!selectedAnswers.Any(sA => sA.Id == answerOptions.Id) && answerOptions.IsCorrect)
                 hasWrong = true;
+            //Option is false, but checked by the player
+            else if (selectedAnswers.Any(sA => sA.Id == answerOptions.Id) && !answerOptions.IsCorrect)
+                hasWrong = true;
 
         }
 
-        tempMcPoints += points;
+        handleAddPoints(question.Id, points);
 
         //player has selected a wrong answer or not all correct answer
         if (hasWrong && !wrongAnsweredQuestions.Contains(question))
@@ -310,4 +336,17 @@ else
         }
     }
     #endregion
+
+    /// <summary>
+    ///  support class to add points correctly
+    /// </summary>
+    /// <param name="questionKey"></param>
+    /// <param name="pointValue"></param>
+    void handleAddPoints(int questionKey, int pointValue)
+    {
+        if (pointsPerQuestion.ContainsKey(questionKey))
+            pointsPerQuestion[questionKey] = pointsPerQuestion[questionKey] + pointValue;
+        else 
+            pointsPerQuestion.Add(questionKey , pointValue);
+    }
 }
