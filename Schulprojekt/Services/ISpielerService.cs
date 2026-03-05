@@ -4,6 +4,7 @@ namespace Schulprojekt.Services
 {
     public interface ISpielerService
     {
-        Task<List<Spieler>> GetAllPlayers();
+        Task<IEnumerable<Spieler>> GetAllPlayers();
+        Task<Spieler?> AddOrUpdateAsync(Spieler item);
     }
 }

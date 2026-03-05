@@ -11,8 +11,9 @@ namespace Schulprojekt.Data
         public DbSet<GapField> GapFields { get; set; }
         public DbSet<GapOption> GapOptions { get; set; }
         public DbSet<McAnswer> McAnswers { get; set; }
-        public DbSet<Theme> Themes { get; set; }
-
+        public DbSet<Thema> Themen { get; set; }
+        public DbSet<QuestionSetProgress> QuestionSetProgresses { get; set; }
+        public DbSet<Spieler> Players { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Question>()

@@ -1,31 +1,72 @@
-﻿using Schulprojekt.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Schulprojekt.Data;
 
 namespace Schulprojekt.Services
 {
     public class SpielerService : ISpielerService
     {
-        public async Task<List<Spieler>> GetAllPlayers()
+        /// <summary>
+        /// Reference to the dbContext in the ContextPage.
+        /// Reference is set during construction and is readonly.
+        /// </summary>
+        private readonly ApplicationDbContext dbContext;
+
+        /// <summary>
+        /// Constructor of the service.
+        /// Should only be instantiated in the ContextPage.
+        /// </summary>
+        /// <param name="dbContext">A reference to the private dbContext in the ContextPage.</param>
+        public SpielerService(ApplicationDbContext dbContext)
         {
-            List<Spieler> players = new List<Spieler>()
+            this.dbContext = dbContext;
+        }
+
+        /// <summary>
+        /// Default constructor required for mocking
+        /// </summary>
+        public SpielerService() { }
+
+        public virtual async Task<IEnumerable<Spieler>> GetAllPlayers()
+        {
+            try
             {
-                new Spieler()
+                return await dbContext.Players
+                    .ToListAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public virtual async Task<Spieler?> AddOrUpdateAsync(Spieler item)
+        {
+            try
+            {
+                // Prüfen, ob der Spielername schon existiert
+                var existing = await dbContext.Players
+                                              .FirstOrDefaultAsync(s => s.Name == item.Name);
+
+                if (existing != null)
                 {
-                    Id = 1,
-                    Name = "Hisoka"
-                },
-                new Spieler()
-                {
-                    Id= 2,
-                    Name = "Gone"
-                },
-                new Spieler()
-                {
-                    Id= 3,
-                    Name = "Kilwa"
+                    // Existierender Spieler → Daten ersetzen / updaten
+                    existing.Name = item.Name; // ggf. weitere Felder updaten
+                    dbContext.Players.Update(existing);
+                    await dbContext.SaveChangesAsync();
+                    return existing;
                 }
-            };
-            
-            return players.ToList();
+                else
+                {
+                    // Neuer Spieler → hinzufügen
+                    var addedEntry = await dbContext.Players.AddAsync(item);
+                    await dbContext.SaveChangesAsync();
+                    return addedEntry.Entity;
+                }
+            }
+            catch
+            {
+                throw;
+            }
         }
     }
 }

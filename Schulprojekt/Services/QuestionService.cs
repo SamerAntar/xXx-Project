@@ -33,7 +33,6 @@ namespace Schulprojekt.Services
                 return await dbContext.Questions
                     .Include(x => x.McAnswers)
                     .Include(x => x.QuestionSet)
-                    .Include(x => x.Themes)
                     .Include(x => x.GapFields)
                        .ThenInclude(g => g.GapOptions)
                     .ToListAsync();
@@ -51,7 +50,6 @@ namespace Schulprojekt.Services
                 return await dbContext.Questions
                     .Include(x => x.McAnswers)
                     .Include(x => x.QuestionSet)
-                    .Include(x => x.Themes)
                     .Include(x => x.GapFields)
                        .ThenInclude(g => g.GapOptions)
                     .Where(x => x.QuestionSetId == questionSetID)

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Schulprojekt.Data;
 
@@ -11,9 +12,11 @@ using Schulprojekt.Data;
 namespace Schulprojekt.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260304193702_Added_Relation_Thema_Questionset")]
+    partial class Added_Relation_Thema_Questionset
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -159,7 +162,7 @@ namespace Schulprojekt.Migrations
                     b.Property<int>("TeamId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ThemaId")
+                    b.Property<int?>("ThemaId")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -174,53 +177,6 @@ namespace Schulprojekt.Migrations
                     b.HasIndex("ThemaId");
 
                     b.ToTable("QuestionSets");
-                });
-
-            modelBuilder.Entity("Schulprojekt.Data.QuestionSetProgress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CompletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsPassed")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("MaxPoints")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Points")
-                        .HasColumnType("int");
-
-                    b.Property<int>("QuestionSetId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SpielerId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("QuestionSetProgresses");
-                });
-
-            modelBuilder.Entity("Schulprojekt.Data.Spieler", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Players");
                 });
 
             modelBuilder.Entity("Schulprojekt.Data.Team", b =>
@@ -314,9 +270,7 @@ namespace Schulprojekt.Migrations
 
                     b.HasOne("Schulprojekt.Data.Thema", "Thema")
                         .WithMany("QuestionSets")
-                        .HasForeignKey("ThemaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ThemaId");
 
                     b.Navigation("Team");
 

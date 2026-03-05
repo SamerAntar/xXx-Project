@@ -6,5 +6,6 @@ namespace Schulprojekt.Services
     {
         Task<IEnumerable<QuestionSet>> GetAllEntriesIncludingNavigationsAsync();
         Task<QuestionSet> GetEntryByKeyIncludingNavigationsAsync(int key);
+        Task<IEnumerable<QuestionSet>> GetEntriesByThemaKeyIncludingNavigationsAsync(int themaId);
     }
 }
