@@ -3,6 +3,8 @@
 @using Schulprojekt.Services
 @using Schulprojekt.Data
 @inject IQuestionService questionService
+@inject IQuestionSetService questionSetService
+
 @inject NotificationService NotificationService
 
 
@@ -124,25 +126,29 @@ else
 
     async Task determinQuizData()
     {
+        QuestionSet questionSet = await loadQuestionSet(QuestionSetId);
+
         switch (QuestionSetId)
         {
             case 1:  //Klassendiagramm Fragen
-                pageTitle = "KlassenDiagram Quiz";
+                pageTitle = questionSet.Title;
                 await loadData(QuestionSetId);
                 quizFoto = "/images/KlassenDiagrammQuiz.png";
                 break;
             case 2:  //Squenzdiagramm Fragen
-                pageTitle = "SquenzDiagramm Quiz";
+                pageTitle = questionSet.Title;
                 await loadData(QuestionSetId);
                 quizFoto = "/images/SequenzdiagrammQuiz.png";
                 break;
             case 3:  //Aktivitätsdiagramm Fragen
-                pageTitle = "AktivitätsDiagramm Quiz";
+                pageTitle = questionSet.Title;
                 await loadData(QuestionSetId);
+                quizFoto = "/images/AktivitätsdiagrammQuiz.png";
                 break;
             case 4:  //UseCasediagramm Fragen
-                pageTitle = "Usecasediagramm Quiz";
+                pageTitle = questionSet.Title;
                 await loadData(QuestionSetId);
+                quizFoto = "/images/ZustandsdiagrammQuiz.png";
                 break;
             default:
                 QuestionsList = new List<Question>();
@@ -154,6 +160,12 @@ else
     {
         QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(questionSetId)).ToList();
         QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.TF).ToList(); // Temprory bcause the other Answers not yet made.
+    }
+
+    async Task<QuestionSet> loadQuestionSet(int questionSetId)
+    {
+        QuestionSet questionSet = await questionSetService.GetEntryByKeyIncludingNavigationsAsync(questionSetId);
+        return questionSet;
     }
 
     /// <summary>
