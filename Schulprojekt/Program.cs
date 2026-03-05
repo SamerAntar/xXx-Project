@@ -19,6 +19,7 @@ builder.Services.AddScoped<IQuestionSetService, QuestionSetService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<IThemaService, ThemaService>();
 builder.Services.AddScoped<ISpielerService, SpielerService>();
+builder.Services.AddScoped<IQuestionSetProgressService, QuestionSetProgressService>();
 builder.Services.AddScoped<QuizStateService>();
 builder.Services.AddScoped<FinalResultStateService>();
 builder.Services.AddRadzenComponents();

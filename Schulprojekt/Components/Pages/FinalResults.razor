@@ -160,7 +160,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        questionSets = (await questionSetService.GetAllEntriesByTeamIDIncludingNavigationsAsync(1)).ToList();
+        //questionSets = (await questionSetService.GetAllEntriesByTeamIDIncludingNavigationsAsync(1)).ToList();
 
         TopicResults2 = questionSets.Select(x => new TopicResult
             {
