@@ -175,6 +175,18 @@ else
                 playerPoints += questionId.Value; //add Multiple Choice points to whole player points
         }
         quizDone = true;  
+
+        bool passed = playerPoints >= QuestionsList.Sum(q => q.McAnswers.Where(a => a.IsCorrect).Max(a => a.Points));
+        var progress = new QuestionSetProgress
+        {
+            SpielerId = SpielerId!.Value,
+            QuestionSetId = QuestionSetId,
+            Points = playerPoints,
+            MaxPoints = QuestionsList.Sum(q => q.McAnswers.Where(q => q.IsCorrect).Max(a => a.Points)),
+            IsPassed = passed
+        };
+
+        QestionSetProgressService.AddEntryAsync(progress);
     }
 
     public async Task ReloadWrongQuestions()
@@ -254,20 +266,6 @@ else
     {
         question.selectMultiAnswers = value?.ToList() ?? new List<McAnswer>();
         MultiplechoiceEvaluating(value, question);
-        quizDone = true;
-
-        bool passed = playerPoints >= QuestionsList.Sum(q => q.McAnswers.Where(a => a.IsCorrect).Max(a => a.Points));
-        var progress = new QuestionSetProgress
-        {
-            SpielerId = SpielerId!.Value,
-            QuestionSetId = QuestionSetId,
-            Points = playerPoints,
-            MaxPoints = QuestionsList.Sum(q => q.McAnswers.Where(q => q.IsCorrect).Max(a => a.Points)),
-            IsPassed = passed
-        };
-
-        QestionSetProgressService.AddEntryAsync(progress);
-
     }
 
     /// <summary>
