@@ -6,6 +6,7 @@ namespace Schulprojekt.Services
     {
         Task<IEnumerable<QuestionSetProgress>> GetAllProgressesWithNavigationsAsync();
         Task<QuestionSetProgress> AddEntryAsync(QuestionSetProgress entry);
+        Task<IEnumerable<QuestionSetProgress>> GetEntriesByPlayerId(int playerId);
     }
 }
 

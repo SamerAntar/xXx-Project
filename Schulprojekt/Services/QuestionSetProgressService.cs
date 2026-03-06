@@ -33,7 +33,7 @@ namespace Schulprojekt.Services
                 return await dbContext.QuestionSetProgresses
                                         .ToListAsync();
             }
-            catch(Exception)
+            catch (Exception)
             {
                 throw;
             }
@@ -47,6 +47,20 @@ namespace Schulprojekt.Services
                 dbContext.SaveChanges();
 
                 return Entity.Entity;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public virtual async Task<IEnumerable<QuestionSetProgress>> GetEntriesByPlayerId(int playerId)
+        {
+            try
+            {
+                return await dbContext.QuestionSetProgresses
+                                        .Where(x => x.SpielerId == playerId)
+                                        .ToListAsync();
             }
             catch (Exception)
             {

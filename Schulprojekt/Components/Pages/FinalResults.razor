@@ -1,6 +1,7 @@
 ﻿@page "/FinalResults"
 @page "/FinalResults/SpielerID={SpielerId:int}/QuestionSetID={QuestionSetId:int}"
 @inject IQuestionSetService questionSetService
+@inject IQuestionSetProgressService QuestionSetProgressService
 @using Schulprojekt.Data
 @using Schulprojekt.Services
 @inject NavigationManager Navi
@@ -122,12 +123,13 @@
     int MaxPoints = 400;
 
     [Parameter] public int? PlayerPoints { get; set; }
-    [Parameter] public int? SpielerId { get; set; }
+    [Parameter] public int SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
 
     List<TopicResult> TopicResults2 = new();
 
     List<QuestionSet> questionSets = new();
+    List<QuestionSetProgress> QuestionSetProgresses = new();
 
     int Percentage => (int)((double)TotalPoints / MaxPoints * 100);
 
@@ -160,6 +162,16 @@
 
     protected override async Task OnInitializedAsync()
     {
+        QuestionSetProgresses = (await QuestionSetProgressService.GetEntriesByPlayerId(SpielerId)).ToList();
+
+        foreach(var s in QuestionSetProgresses)
+        {
+            TopicResults2.Add(new TopicResult()
+            {
+                //Topic = await questionSetService.GetEntryByKeyIncludingNavigationsAsync(s.QuestionSetId);
+            });
+        }
+
         //questionSets = (await questionSetService.GetAllEntriesByTeamIDIncludingNavigationsAsync(1)).ToList();
 
         TopicResults2 = questionSets.Select(x => new TopicResult
