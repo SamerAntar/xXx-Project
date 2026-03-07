@@ -17,15 +17,17 @@
                     🎉 Game Completed!
                 </RadzenHeading>
                 <RadzenHeading Size="H2" class="score-text">
-                    @TotalPoints / @MaxPoints
+                    @totalPoints / @totalMax
                 </RadzenHeading>
                 <RadzenHeading Size="H3">
-                    @Percentage%
+                    @percent%
                 </RadzenHeading>
-                <RadzenProgressBar Value="@Percentage"
-                                   ShowValue="true"
-                                   Style="width:80%; height:20px;"
-                                   />
+                <RadzenProgressBar Value="@percent"
+                                   Style="width:80%; height:20px;">
+                    <Template>
+                        @($"{percent:0.00}%")
+                    </Template>
+                </RadzenProgressBar>
                 <RadzenIcon Icon="@MedalIcon"
                             Style="@($"font-size:70px; color:{MedalColor};")" />
 
@@ -39,9 +41,9 @@
             <RadzenHeading Size="H4">Performance Overview</RadzenHeading>
 
             <RadzenChart Style="height:350px;">
-                <RadzenColumnSeries Data="@QuestionSetList"
-                                    CategoryProperty="Title"
-                                    ValueProperty="Percent" />
+                <RadzenColumnSeries Data="@QuestionSetProgressList"
+                                    CategoryProperty="Topic"
+                                    ValueProperty="Points" />
                 <RadzenCategoryAxis />
                 <RadzenValueAxis />
             </RadzenChart>
@@ -49,15 +51,22 @@
         <!-- DETAIL GRID -->
         <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4">
             <RadzenHeading Size="H4">Detailed Results</RadzenHeading>
-            <RadzenDataGrid Data="@TopicResults" TItem="TopicResult">
+            <RadzenDataGrid Data="@QuestionSetProgressList" TItem="QuestionSetProgress">
                 <Columns>
-                        <RadzenDataGridColumn TItem="QuestionSet" Property="Title" Title="Topic" />
-                        <RadzenDataGridColumn TItem="TopicResult" Property="Points" Title="Points" />
-                        <RadzenDataGridColumn TItem="TopicResult" Property="MaxPoints" Title="Max Points" />
-                        <RadzenDataGridColumn TItem="TopicResult" Property="Percent" Title="Percent (%)" />
-                    <RadzenDataGridColumn TItem="TopicResult" Title="Status">
+                    <RadzenDataGridColumn TItem="QuestionSetProgress" Property="Topic" Title="Topic" />
+                    <RadzenDataGridColumn TItem="QuestionSetProgress" Property="Points" Title="Points" />
+                    <RadzenDataGridColumn TItem="QuestionSetProgress" Property="MaxPoints" Title="Max Points" />
+                    <RadzenDataGridColumn TItem="QuestionSetProgress" Title="Percent (%)">
                         <Template Context="item">
-                            @if (item.Percent >= 60)
+                            @{
+                                var percent = item.MaxPoints == 0 ? 0 : (double)item.Points / item.MaxPoints * 100;
+                            }
+                            @($"{percent:0.##}%")
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="QuestionSetProgress" Title="Status">
+                        <Template Context="item">
+                            @if (item.Points >= item.MaxPoints / 2)
                             {
                                 <RadzenBadge Text="Passed" BadgeStyle="BadgeStyle.Success" />
                             }
@@ -76,19 +85,8 @@
                      JustifyContent="JustifyContent.Center"
                      Gap="1rem"
                      class="rz-mt-4">
-
-            <RadzenButton Text="Restart Game"
-                          Icon="refresh"
-                          ButtonStyle="ButtonStyle.Primary"
-                          Click="@RestartGame" />
-
-            <RadzenButton Text="Back to Home"
-                          Icon="home"
-                          ButtonStyle="ButtonStyle.Light"
-                          Click="@GoHome" />
-
+            <RadzenButton Click=@GoHome Icon="home" Text="Back to Home" Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Info" />
         </RadzenStack>
-
     </RadzenColumn>
 </RadzenRow>
 
@@ -107,8 +105,6 @@
 
 @code {
 
-
-    [Parameter] public int PlayerPoints { get; set; }
     [Parameter] public int SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
 
@@ -116,14 +112,11 @@
     List<QuestionSet> QuestionSetList = new();
     List<QuestionSetProgress> QuestionSetProgressList = new();
 
-    int TotalPoints = 0;
-    int MaxPoints = 0;
+    double? totalPoints = 0;
+    double? totalMax = 0;
+    double percent = 0;
 
-
-
-    int Percentage => (int)((double)TotalPoints / MaxPoints * 100);
-
-    string MedalIcon => Percentage switch
+    string MedalIcon => percent switch
     {
         >= 90 => "emoji_events",
         >= 75 => "military_tech",
@@ -131,7 +124,7 @@
         _ => "sentiment_dissatisfied"
     };
 
-    string MedalColor => Percentage switch
+    string MedalColor => percent switch
     {
         >= 90 => "#FFD700", // Gold
         >= 75 => "#C0C0C0", // Silver
@@ -139,7 +132,7 @@
         _ => "#f44336"
     };
 
-    string MotivationText => Percentage switch
+    string MotivationText => percent switch
     {
         >= 90 => "Outstanding performance! You mastered all topics!",
         >= 75 => "Great job! You have strong knowledge.",
@@ -149,57 +142,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        QuestionSetProgressList = (await QuestionSetProgressService.GetEntriesByPlayerId(SpielerId)).ToList();
+        QuestionSetProgressList = (await QuestionSetProgressService.GetEntriesByPlayerId(6)).ToList();
+
         QuestionSetList = (await questionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(1)).ToList();
 
-        TotalPoints = 30;
-
-
-        foreach(var qs in QuestionSetList)
-        {
-            foreach(var q in qs.Questions ?? Enumerable.Empty<Question>())
-            {
-                MaxPoints += q.McAnswers?
-                    .Where(a => a.IsCorrect)
-                    .Sum(a => a.Points) ?? 0;
-
-                MaxPoints += q.GapFields?
-                    .SelectMany(g => g.GapOptions)
-                    .Count(g => g.IsCorrect) ?? 0;
-            }
-        }
-
-    }
-
-
-
-    List<TopicResult> TopicResults = new()
-    {
-
-        
-
-        new TopicResult { Points = 80, MaxPoints = 100, Percent = 80 },
-        new TopicResult { Points = 70, MaxPoints = 100, Percent = 70 },
-        new TopicResult { Points = 90, MaxPoints = 100, Percent = 90 },
-        new TopicResult { Points = 80, MaxPoints = 100, Percent = 80 }
-    };
-
-    void RestartGame()
-    {
-        Navi.NavigateTo("/");
+        totalPoints = QuestionSetProgressList.Sum(x => x.Points);
+        totalMax = QuestionSetProgressList.Sum(x => x.MaxPoints);
+        percent = totalMax == 0 ? 0 : (totalPoints ?? 0) / (totalMax ?? 1) * 100;
     }
 
     void GoHome()
     {
         Navi.NavigateTo("/");
     }
-
-    public class TopicResult
-    {
-        public string Topic { get; set; } = "";
-        public int Points { get; set; }
-        public int MaxPoints { get; set; }
-        public int Percent { get; set; }
-    }
-
 }

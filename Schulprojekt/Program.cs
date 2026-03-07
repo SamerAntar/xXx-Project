@@ -7,7 +7,7 @@ using Schulprojekt.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add SQL Server connection
-builder.Services.AddDbContext<ApplicationDbContext>(
+builder.Services.AddDbContextFactory<ApplicationDbContext>(
     options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
@@ -21,7 +21,6 @@ builder.Services.AddScoped<IThemaService, ThemaService>();
 builder.Services.AddScoped<ISpielerService, SpielerService>();
 builder.Services.AddScoped<IQuestionSetProgressService, QuestionSetProgressService>();
 builder.Services.AddScoped<QuizStateService>();
-builder.Services.AddScoped<FinalResultStateService>();
 builder.Services.AddRadzenComponents();
 
 

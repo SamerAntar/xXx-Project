@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Schulprojekt.Data;
 
 namespace Schulprojekt.Services
@@ -9,16 +10,16 @@ namespace Schulprojekt.Services
         /// Reference to the dbContext in the ContextPage.
         /// Reference is set during construction and is readonly.
         /// </summary>
-        private readonly ApplicationDbContext dbContext;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
         /// <summary>
         /// Constructor of the service.
         /// Should only be instantiated in the ContextPage.
         /// </summary>
         /// <param name="dbContext">A reference to the private dbContext in the ContextPage.</param>
-        public QuestionSetProgressService(ApplicationDbContext dbContext)
+        public QuestionSetProgressService(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            this.dbContext = dbContext;
+            _contextFactory = contextFactory;
         }
 
         /// <summary>
@@ -30,6 +31,8 @@ namespace Schulprojekt.Services
         {
             try
             {
+                using var dbContext = await _contextFactory.CreateDbContextAsync();
+
                 return await dbContext.QuestionSetProgresses
                                         .ToListAsync();
             }
@@ -39,25 +42,22 @@ namespace Schulprojekt.Services
             }
         }
 
-        public virtual async Task<QuestionSetProgress> AddEntryAsync(QuestionSetProgress item)
+        public async Task<QuestionSetProgress> AddEntryAsync(QuestionSetProgress item)
         {
-            try
-            {
-                var Entity = await dbContext.QuestionSetProgresses.AddAsync(item);
-                dbContext.SaveChanges();
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
 
-                return Entity.Entity;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            var entity = await dbContext.QuestionSetProgresses.AddAsync(item);
+            await dbContext.SaveChangesAsync();
+
+            return entity.Entity;
         }
 
         public virtual async Task<IEnumerable<QuestionSetProgress>> GetEntriesByPlayerId(int playerId)
         {
             try
             {
+                using var dbContext = await _contextFactory.CreateDbContextAsync();
+
                 return await dbContext.QuestionSetProgresses
                                         .Where(x => x.SpielerId == playerId)
                                         .ToListAsync();

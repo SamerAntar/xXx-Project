@@ -4,6 +4,7 @@
 @using Schulprojekt.Data
 @inject IQuestionService questionService
 @inject IQuestionSetService questionSetService
+@inject QuizStateService QuizStateService
 
 @inject NotificationService NotificationService
 @inject IQuestionSetProgressService QestionSetProgressService
@@ -176,26 +177,33 @@ else
             else 
                 playerPoints += questionId.Value; //add Multiple Choice points to whole player points
         }
+
         quizDone = true;
 
         QuestionSet questionSet = await questionSetService.GetEntryByKeyIncludingNavigationsAsync(QuestionSetId);
+
+        string topic = questionSet.Title;
 
         double MaxPoints = getMaxPointsForQuiz(questionSet);
 
         double halfPoints = MaxPoints / 2;
 
-        bool passed = playerPoints >= halfPoints;
+        var quizPoints = playerPoints - QuizStateService.QuizPoints;
+
+        QuizStateService.QuizPoints = playerPoints;
+
+        bool passed = quizPoints >= halfPoints;
 
         if(passed)
         {
             var progress = new QuestionSetProgress
             {
-                //Topic = questionSet.Title,
+                Topic = topic,
                 SpielerId = SpielerId,
-                //ThemaId = ThemaId,
+                ThemaId = ThemaId,
                 QuestionSetId = QuestionSetId,
-                Points = playerPoints,
-                //MaxPoints = MaxPoints,
+                Points = quizPoints,
+                MaxPoints = MaxPoints,
                 IsPassed = passed
             };
 

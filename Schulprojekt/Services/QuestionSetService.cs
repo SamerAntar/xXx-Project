@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Schulprojekt.Data;
 
 namespace Schulprojekt.Services
@@ -10,16 +11,16 @@ namespace Schulprojekt.Services
         /// Reference to the dbContext in the ContextPage.
         /// Reference is set during construction and is readonly.
         /// </summary>
-        private readonly ApplicationDbContext dbContext;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
         /// <summary>
         /// Constructor of the service.
         /// Should only be instantiated in the ContextPage.
         /// </summary>
         /// <param name="dbContext">A reference to the private dbContext in the ContextPage.</param>
-        public QuestionSetService(ApplicationDbContext dbContext)
+        public QuestionSetService(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            this.dbContext = dbContext;
+            _contextFactory = contextFactory;
         }
 
         /// <summary>
@@ -31,6 +32,8 @@ namespace Schulprojekt.Services
         {
             try
             {
+                using var dbContext = await _contextFactory.CreateDbContextAsync();
+
                 return await dbContext.QuestionSets
                     .Include(x => x.Questions)
                     .Include(x => x.Team)
@@ -46,6 +49,8 @@ namespace Schulprojekt.Services
         {
             try
             {
+                using var dbContext = await _contextFactory.CreateDbContextAsync();
+
                 return await dbContext.QuestionSets
                     .Include(q => q.Questions)
                         .ThenInclude(q => q.McAnswers)
@@ -66,6 +71,8 @@ namespace Schulprojekt.Services
         {
             try
             {
+                using var dbContext = await _contextFactory.CreateDbContextAsync();
+
                 return await dbContext.QuestionSets
                     .Include(qs => qs.Questions)
                         .ThenInclude(q => q.McAnswers)

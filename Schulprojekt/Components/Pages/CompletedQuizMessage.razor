@@ -3,7 +3,6 @@
 @inject IQuestionSetService questionSetService
 @inject NotificationService NotificationService
 @inject QuizStateService quizStateService
-@inject FinalResultStateService finalResultStateService
 @inject NavigationManager Navi
 
 <RadzenCard class="completed-card rz-shadow-4 rz-p-6">
@@ -95,7 +94,7 @@
     }
 
     private void GoToNextQuiz()
-    {
+    {       
         if (quizStateService.RemainingQuizIds.Any())
         {
             int nextQuizId = quizStateService.RemainingQuizIds.First();
@@ -105,11 +104,6 @@
         }
         else
         {
-            // Optional: Info wenn kein Quiz mehr vorhanden oder Maxiem baut die Bewertungsseite und erstellt die Navigation da.
-
-            finalResultStateService.QuestionSets = questionSets;
-            finalResultStateService.Percent = 90;
-
             Navi.NavigateTo($"/FinalResults/SpielerID={SpielerId}/QuestionSetID={QuestionSetId}");
             //NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Kein weiteres Quiz", Duration = 3000 });
         }
