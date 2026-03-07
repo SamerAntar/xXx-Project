@@ -10,24 +10,18 @@
 
 <RadzenRow JustifyContent="JustifyContent.Center" class="rz-mt-6">
     <RadzenColumn Size="8">
-
         <!-- HERO CARD -->
         <RadzenCard class="hero-card rz-shadow-6 rz-p-6">
-
             <RadzenStack AlignItems="AlignItems.Center" Gap="1rem">
-
                 <RadzenHeading Size="H1">
                     🎉 Game Completed!
                 </RadzenHeading>
-
                 <RadzenHeading Size="H2" class="score-text">
                     @TotalPoints / @MaxPoints
                 </RadzenHeading>
-
                 <RadzenHeading Size="H3">
                     @Percentage%
                 </RadzenHeading>
-
                 <RadzenProgressBar Value="@Percentage"
                                    ShowValue="true"
                                    Style="width:80%; height:20px;"
@@ -40,32 +34,27 @@
                 </RadzenText>
             </RadzenStack>
         </RadzenCard>
-
         <!-- CHART -->
         <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4">
             <RadzenHeading Size="H4">Performance Overview</RadzenHeading>
 
             <RadzenChart Style="height:350px;">
-                <RadzenColumnSeries Data="@TopicResults2"
-                                    CategoryProperty="Topic"
+                <RadzenColumnSeries Data="@QuestionSetList"
+                                    CategoryProperty="Title"
                                     ValueProperty="Percent" />
                 <RadzenCategoryAxis />
                 <RadzenValueAxis />
             </RadzenChart>
         </RadzenCard>
-
         <!-- DETAIL GRID -->
         <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4">
             <RadzenHeading Size="H4">Detailed Results</RadzenHeading>
-
             <RadzenDataGrid Data="@TopicResults" TItem="TopicResult">
                 <Columns>
-        
                         <RadzenDataGridColumn TItem="QuestionSet" Property="Title" Title="Topic" />
                         <RadzenDataGridColumn TItem="TopicResult" Property="Points" Title="Points" />
                         <RadzenDataGridColumn TItem="TopicResult" Property="MaxPoints" Title="Max Points" />
                         <RadzenDataGridColumn TItem="TopicResult" Property="Percent" Title="Percent (%)" />
-
                     <RadzenDataGridColumn TItem="TopicResult" Title="Status">
                         <Template Context="item">
                             @if (item.Percent >= 60)
@@ -118,18 +107,19 @@
 
 @code {
 
-    // Beispielwerte (später aus Service übergeben)
-    int TotalPoints = 400;
-    int MaxPoints = 400;
 
-    [Parameter] public int? PlayerPoints { get; set; }
+    [Parameter] public int PlayerPoints { get; set; }
     [Parameter] public int SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
 
-    List<TopicResult> TopicResults2 = new();
 
-    List<QuestionSet> questionSets = new();
-    List<QuestionSetProgress> QuestionSetProgresses = new();
+    List<QuestionSet> QuestionSetList = new();
+    List<QuestionSetProgress> QuestionSetProgressList = new();
+
+    int TotalPoints = 0;
+    int MaxPoints = 0;
+
+
 
     int Percentage => (int)((double)TotalPoints / MaxPoints * 100);
 
@@ -157,28 +147,28 @@
         _ => "Keep practicing and try again!"
     };
 
-
-
-
     protected override async Task OnInitializedAsync()
     {
-        QuestionSetProgresses = (await QuestionSetProgressService.GetEntriesByPlayerId(SpielerId)).ToList();
+        QuestionSetProgressList = (await QuestionSetProgressService.GetEntriesByPlayerId(SpielerId)).ToList();
+        QuestionSetList = (await questionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(1)).ToList();
 
-        foreach(var s in QuestionSetProgresses)
+        TotalPoints = 30;
+
+
+        foreach(var qs in QuestionSetList)
         {
-            TopicResults2.Add(new TopicResult()
+            foreach(var q in qs.Questions ?? Enumerable.Empty<Question>())
             {
-                //Topic = await questionSetService.GetEntryByKeyIncludingNavigationsAsync(s.QuestionSetId);
-            });
+                MaxPoints += q.McAnswers?
+                    .Where(a => a.IsCorrect)
+                    .Sum(a => a.Points) ?? 0;
+
+                MaxPoints += q.GapFields?
+                    .SelectMany(g => g.GapOptions)
+                    .Count(g => g.IsCorrect) ?? 0;
+            }
         }
 
-        //questionSets = (await questionSetService.GetAllEntriesByTeamIDIncludingNavigationsAsync(1)).ToList();
-
-        TopicResults2 = questionSets.Select(x => new TopicResult
-            {
-                Topic = x.Title,
-                Percent = 70
-            }).ToList();
     }
 
 

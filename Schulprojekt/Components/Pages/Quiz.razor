@@ -1,5 +1,5 @@
 ﻿@page "/Quiz"
-@page "/Quiz/SpielerID={SpielerId:int}/QuizID={QuestionSetId:int}"
+@page "/Quiz/ThemaID={ThemaId:int}/SpielerID={SpielerId:int}/QuizID={QuestionSetId:int}"
 @using Schulprojekt.Services
 @using Schulprojekt.Data
 @inject IQuestionService questionService
@@ -83,6 +83,7 @@ else
             PlayerPoints="playerPoints" 
             QuestionSetId="QuestionSetId" 
             SpielerId="SpielerId"
+            ThemaId="ThemaId"
             OnRetryWrong="ReloadWrongQuestions">
         </CompletedQuizMessage>
     }
@@ -94,8 +95,9 @@ else
 
 
 @code {
-    [Parameter] public int? SpielerId { get; set; }
+    [Parameter] public int SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
+    [Parameter] public int ThemaId { get; set; }
 
     RadzenDataList<Question>? dataList;
     List<Question> QuestionsList = new();
@@ -165,7 +167,7 @@ else
         return questionSet;
     }
 
-    void QuizAccomplisched()
+    async Task QuizAccomplisched()
     {
         foreach(var questionId in pointsPerQuestion)
         {
@@ -174,19 +176,45 @@ else
             else 
                 playerPoints += questionId.Value; //add Multiple Choice points to whole player points
         }
-        quizDone = true;  
+        quizDone = true;
 
-        bool passed = playerPoints >= QuestionsList.Sum(q => q.McAnswers.Where(a => a.IsCorrect).Max(a => a.Points));
-        var progress = new QuestionSetProgress
+        QuestionSet questionSet = await questionSetService.GetEntryByKeyIncludingNavigationsAsync(QuestionSetId);
+
+        double MaxPoints = getMaxPointsForQuiz(questionSet);
+
+        double halfPoints = MaxPoints / 2;
+
+        bool passed = playerPoints >= halfPoints;
+
+        if(passed)
         {
-            SpielerId = SpielerId!.Value,
-            QuestionSetId = QuestionSetId,
-            Points = playerPoints,
-            MaxPoints = QuestionsList.Sum(q => q.McAnswers.Where(q => q.IsCorrect).Max(a => a.Points)),
-            IsPassed = passed
-        };
+            var progress = new QuestionSetProgress
+            {
+                //Topic = questionSet.Title,
+                SpielerId = SpielerId,
+                //ThemaId = ThemaId,
+                QuestionSetId = QuestionSetId,
+                Points = playerPoints,
+                //MaxPoints = MaxPoints,
+                IsPassed = passed
+            };
 
-        QestionSetProgressService.AddEntryAsync(progress);
+            await QestionSetProgressService.AddEntryAsync(progress);
+        }
+    }
+
+    private int getMaxPointsForQuiz(QuestionSet questionSet)
+    {
+        int max = 0;
+
+        foreach(var q in questionSet.Questions)
+        {
+            max += q.McAnswers.Where(a => a.IsCorrect).Sum(a => a.Points);
+
+            max += q.GapFields.SelectMany(g => g.GapOptions).Count(go => go.IsCorrect);
+        }
+
+        return max;
     }
 
     public async Task ReloadWrongQuestions()

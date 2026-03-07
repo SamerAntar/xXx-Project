@@ -82,8 +82,8 @@
     List<Spieler> SpielerList = new();
     List<QuestionSet> QuestionSetsList = new();
     List<Thema> ThemenList = new();
-    QuestionSet? selectedQuestionSet;
-    Thema? selectedthema;
+    QuestionSet? selectedQuestionSet = new();
+    Thema? selectedthema = new();
 
     string playerName = "";
 
@@ -131,7 +131,7 @@
 
         if(savedPlayer is not null)
         {
-            Navi.NavigateTo($"/Quiz/SpielerID={savedPlayer.Id}/QuizID={selectedQuestionSet.Id}");
+            Navi.NavigateTo($"/Quiz/ThemaID={selectedthema.Id}/SpielerID={savedPlayer.Id}/QuizID={selectedQuestionSet.Id}");
         }
     }
 

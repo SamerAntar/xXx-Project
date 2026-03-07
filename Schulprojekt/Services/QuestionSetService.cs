@@ -27,7 +27,7 @@ namespace Schulprojekt.Services
         /// </summary>
         public QuestionSetService() { }
 
-        public virtual async Task<IEnumerable<QuestionSet?>> GetAllEntriesIncludingNavigationsAsync()
+        public virtual async Task<IEnumerable<QuestionSet>> GetAllEntriesIncludingNavigationsAsync()
         {
             try
             {
@@ -47,11 +47,16 @@ namespace Schulprojekt.Services
             try
             {
                 return await dbContext.QuestionSets
-                    .Include(x => x.Questions)
-                    .Include(x => x.Team)
-                .FirstOrDefaultAsync(x => x.Id == key);
+                    .Include(q => q.Questions)
+                        .ThenInclude(q => q.McAnswers)
+                    .Include(q => q.Questions)
+                        .ThenInclude(q => q.GapFields)
+                            .ThenInclude(g => g.GapOptions)
+                    .Include(q => q.Team)
+                    .Include(q => q.Thema)
+                    .FirstOrDefaultAsync(q => q.Id == key);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -62,10 +67,14 @@ namespace Schulprojekt.Services
             try
             {
                 return await dbContext.QuestionSets
-                    .Include(x => x.Questions)
-                    .Include(x => x.Team)
+                    .Include(qs => qs.Questions)
+                        .ThenInclude(q => q.McAnswers)
+                    .Include(qs => qs.Questions)
+                        .ThenInclude(q => q.GapFields)
+                            .ThenInclude(gf => gf.GapOptions)
+                        .Include(x => x.Team)
                     .Include(x => x.Thema)
-                    .Where(x => x.TeamId == themaId)
+                    .Where(x => x.ThemaId == themaId)
                     .ToListAsync();
             }
             catch (Exception)

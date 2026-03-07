@@ -64,10 +64,9 @@
 @code {
 
     [Parameter] public int? PlayerPoints { get; set; }
-
     [Parameter] public int QuestionSetId { get; set; }
-
     [Parameter] public int? SpielerId { get; set; }
+    [Parameter] public int ThemaId { get; set; }
 
     [Parameter] public EventCallback OnRetryWrong { get; set; }
 
@@ -102,7 +101,7 @@
             int nextQuizId = quizStateService.RemainingQuizIds.First();
             quizStateService.RemainingQuizIds.Remove(nextQuizId);
 
-            Navi.NavigateTo($"/Quiz/SpielerID={SpielerId}/QuizID={nextQuizId}");
+            Navi.NavigateTo($"/Quiz/ThemaID={ThemaId}/SpielerID={SpielerId}/QuizID={nextQuizId}");
         }
         else
         {
