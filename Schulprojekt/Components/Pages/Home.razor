@@ -12,57 +12,60 @@
 <div class="home-background" style="background-image: url('/images/HomeMain.png')">
     <div class="home-content">
         <h2>Willkommen beim Hunter X Hunter Spiel</h2>
-        <div style="display:flex; justify-content:center; margin-top:40px;">
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Style="margin-top:30px;">
             <div style="width:300px;">
                 <!-- #Row 1 DropdownList (Themen) -->
-                <RadzenDropDown AllowClear="false"
-                                Placeholder="--Bitte Thema auswählen--"
-                                TValue="Thema"
-                                Data="@ThemenList"
-                                TextProperty="Name"
-                                @bind-Value="selectedthema"
-                                Change="LoadQuestionSet" />
-                @if (IsThemeMissing())
-                {
-                    <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
-                                 Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark"
-                                 Style="width:90%">
-                        Thema ist erforderlich!
-                    </RadzenAlert>
-                }
+                <RadzenStack>
+                    <RadzenDropDown Placeholder="--Bitte Thema auswählen--"
+                                    TValue="Thema"
+                                    Data="@ThemenList"
+                                    TextProperty="Name"
+                                    @bind-Value="selectedthema"
+                                    Change="LoadQuestionSet" />
+                    @if (IsThemeMissing())
+                    {
+                        <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                                     Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark">
+                            Thema ist erforderlich!
+                        </RadzenAlert>
+                    }
+                </RadzenStack>
             </div>
-        </div>
-        <div style="display:flex; justify-content:center; margin-top:20px;">
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="20px" JustifyContent="JustifyContent.Center" Style="margin-top:20px;">
+
             <div style="width:300px;">
-                <!-- #Row 2 TextFeld (Spieler) -->
-                <RadzenTextBox @bind-Value="playerName" Placeholder="Spielername eingeben" Style="width:275px;" />
-                @if (IsPlayerMissing())
-                {
-                    <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
-                                 Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark"
-                                 Style="width:90%">
-                        Spieler ist erforderlich!
-                    </RadzenAlert>
-                }
+                <RadzenStack>
+                    <RadzenTextBox @bind-Value="playerName" Placeholder="Spielername eingeben" />
+                    @if (IsPlayerMissing())
+                    {
+                        <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                                     Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark">
+                            Spieler ist erforderlich!
+                        </RadzenAlert>
+                    }
+                </RadzenStack>
             </div>
+
             <div style="width:300px;">
-                <!-- #Row 2 DropdownList (QuestionSet) -->
-                <RadzenDropDown Placeholder="--Bitte Quiz auswählen--"
-                                AllowClear="true"
-                                TValue="QuestionSet"
-                                Data="@QuestionSetsList"
-                                TextProperty="Title"
-                                @bind-Value="selectedQuestionSet" />
-                @if (IsQuestionSetMissing())
-                {
-                    <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
-                                 Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark"
-                                 Style="width:85%">
-                        Quiz ist erforderlich!
-                    </RadzenAlert>
-                }
+                <RadzenStack>
+                    <RadzenDropDown Placeholder="--Bitte Quiz auswählen--"
+                                    AllowClear="true"
+                                    TValue="QuestionSet"
+                                    Data="@QuestionSetsList"
+                                    TextProperty="Title"
+                                    @bind-Value="selectedQuestionSet" />
+
+                    @if (IsQuestionSetMissing())
+                    {
+                        <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                                     Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark">
+                            Quiz ist erforderlich!
+                        </RadzenAlert>
+                    }
+                </RadzenStack>
             </div>
-        </div>     
+        </RadzenStack>
         <div style="display:flex; justify-content:center; margin-top:40px;">
             <RadzenButton Variant="Variant.Flat" Click="StartGame" Text="Quiz starten" ButtonStyle="ButtonStyle.Success" />
         </div>
@@ -71,7 +74,7 @@
                  Style="position:absolute;
                         bottom:20px;
                         right:20px;
-                        width:300px;
+                        width:350px;
                         height:auto;" />
 
 </div>
@@ -82,8 +85,8 @@
     List<Spieler> SpielerList = new();
     List<QuestionSet> QuestionSetsList = new();
     List<Thema> ThemenList = new();
-    QuestionSet? selectedQuestionSet = new();
-    Thema? selectedthema = new();
+    QuestionSet? selectedQuestionSet;
+    Thema selectedthema;
 
     string playerName = "";
 
@@ -129,7 +132,7 @@
         var spieler = new Spieler { Name = playerName };
         var savedPlayer = await SpielerService.AddOrUpdateAsync(spieler);
 
-        if(savedPlayer is not null)
+        if (savedPlayer is not null)
         {
             Navi.NavigateTo($"/Quiz/ThemaID={selectedthema.Id}/SpielerID={savedPlayer.Id}/QuizID={selectedQuestionSet.Id}");
         }

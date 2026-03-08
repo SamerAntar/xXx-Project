@@ -7,7 +7,7 @@
 
 <RadzenCard class="completed-card rz-shadow-4 rz-p-6">
     <RadzenStack AlignItems="AlignItems.Center" Gap="1.5rem">
-        @if (PlayerPoints > 9)
+        @if (CollectedPointsFromPlayer >= halfQuizPoints)
         {
             <RadzenIcon Icon="emoji_events" Style="font-size:64px;color:#4caf50;" />
 
@@ -66,9 +66,11 @@
     [Parameter] public int QuestionSetId { get; set; }
     [Parameter] public int? SpielerId { get; set; }
     [Parameter] public int ThemaId { get; set; }
+    [Parameter] public int? CollectedPointsFromPlayer { get; set; }
 
     [Parameter] public EventCallback OnRetryWrong { get; set; }
 
+    double halfQuizPoints;
 
     List<QuestionSet> questionSets = new();
 
@@ -76,7 +78,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-
         if (!quizStateService.IsInitialized)
         {
             questionSets = (await questionSetService.GetAllEntriesIncludingNavigationsAsync()).ToList();
@@ -91,10 +92,16 @@
         }
 
         quizStateService.RemainingQuizIds.Remove(QuestionSetId); // Remove Last Quiz so i can start the next one.
+
+        var questionSet = await questionSetService.GetEntryByKeyIncludingNavigationsAsync(QuestionSetId);
+
+        double MaxPoints = getMaxPointsForQuiz(questionSet);
+
+        halfQuizPoints = MaxPoints / 2;
     }
 
     private void GoToNextQuiz()
-    {       
+    {
         if (quizStateService.RemainingQuizIds.Any())
         {
             int nextQuizId = quizStateService.RemainingQuizIds.First();
@@ -107,5 +114,19 @@
             Navi.NavigateTo($"/FinalResults/SpielerID={SpielerId}/QuestionSetID={QuestionSetId}");
             //NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Kein weiteres Quiz", Duration = 3000 });
         }
+    }
+
+    private int getMaxPointsForQuiz(QuestionSet questionSet)
+    {
+        int points = 0;
+
+        foreach (var q in questionSet.Questions)
+        {
+            points += q.McAnswers.Where(x => x.IsCorrect).Sum(x => x.Points);
+
+            points += q.GapFields.SelectMany(x => x.GapOptions).Count(x => x.IsCorrect);
+        }
+
+        return points;
     }
 }

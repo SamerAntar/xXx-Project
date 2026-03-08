@@ -85,7 +85,7 @@
                      JustifyContent="JustifyContent.Center"
                      Gap="1rem"
                      class="rz-mt-4">
-            <RadzenButton Click=@GoHome Icon="home" Text="Back to Home" Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Info" />
+            <RadzenButton Click=@GoHome Icon="home" Text="Zurück zur Startseite" Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Info" />
         </RadzenStack>
     </RadzenColumn>
 </RadzenRow>
@@ -134,17 +134,20 @@
 
     string MotivationText => percent switch
     {
-        >= 90 => "Outstanding performance! You mastered all topics!",
-        >= 75 => "Great job! You have strong knowledge.",
-        >= 60 => "Good effort! A little more practice will make it perfect.",
-        _ => "Keep practicing and try again!"
+        >= 90 => "Hervorragende Leistung! Du beherrschst alle Themen!",
+        >= 75 => "Super! Du hast ein sehr gutes Wissen.",
+        >= 60 => "Gute Arbeit! Etwas mehr Übung macht es perfekt.",
+        _ => "Übe weiter und versuche es noch einmal!"
     };
 
     protected override async Task OnInitializedAsync()
     {
-        QuestionSetProgressList = (await QuestionSetProgressService.GetEntriesByPlayerId(6)).ToList();
 
-        QuestionSetList = (await questionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(1)).ToList();
+        //Todo: Topic distinct anzeigen.
+
+        QuestionSetProgressList = (await QuestionSetProgressService.GetEntriesByPlayerId(SpielerId)).ToList();
+
+        QuestionSetList = (await questionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(QuestionSetId)).ToList();
 
         totalPoints = QuestionSetProgressList.Sum(x => x.Points);
         totalMax = QuestionSetProgressList.Sum(x => x.MaxPoints);
