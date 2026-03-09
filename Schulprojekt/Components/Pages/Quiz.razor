@@ -92,7 +92,7 @@ else
 }
 
 
-@code { 
+@code {
     [Parameter] public int? SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
 
@@ -140,32 +140,9 @@ else
     {
         QuestionSet questionSet = await loadQuestionSet(QuestionSetId);
 
-        switch (QuestionSetId)
-        {
-            case 1:  //Klassendiagramm Fragen
-                pageTitle = questionSet.Title;
-                await loadData(QuestionSetId);
-                quizFoto = "/images/KlassenDiagrammQuiz.png";
-                break;
-            case 2:  //Squenzdiagramm Fragen
-                pageTitle = questionSet.Title;
-                await loadData(QuestionSetId);
-                quizFoto = "/images/SequenzdiagrammQuiz.png";
-                break;
-            case 3:  //Aktivitätsdiagramm Fragen
-                pageTitle = questionSet.Title;
-                await loadData(QuestionSetId);
-                quizFoto = "/images/AktivitätsdiagrammQuiz.png";
-                break;
-            case 4:  //UseCasediagramm Fragen
-                pageTitle = questionSet.Title;
-                await loadData(QuestionSetId);
-                quizFoto = "/images/ZustandsdiagrammQuiz.png";
-                break;
-            default:
-                QuestionsList = new List<Question>();
-                break;
-        }
+        pageTitle = questionSet.Title;
+        await loadData(QuestionSetId);
+        quizFoto = "/images/" + $"{QuestionSetId}.png";
     }
 
     async Task loadData(int questionSetId)
