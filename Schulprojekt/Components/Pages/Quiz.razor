@@ -14,7 +14,7 @@
 
 @if (QuestionsList.Count <= 0)
 {
-    <h3>Loding...</h3>
+    <h3>Loading...</h3>
 }
 else
 {
@@ -37,7 +37,7 @@ else
                     <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start" Gap="0.5rem" class="rz-p-sm-12">
                         @if (x.QuestionType == QuestionType.TF && !x.AllowsMultiple)
                         {
-                            <!-- (SingleChoice Answers) -->
+                            <!-- (Single Choice Answers) -->
                             <RadzenRadioButtonList @bind-Value=@x.selectedAnswer TValue="McAnswer" Change="@(value => SinglechoiceEvaluating(value, x))" Orientation="Orientation.Vertical">
                                 <Items>
                                     @foreach (var antwort in x.McAnswers)
@@ -49,7 +49,7 @@ else
                         }
                         else if (x.QuestionType == QuestionType.MC && x.AllowsMultiple)
                         {
-                                <!-- (MultipleChoice Answers) -->
+                                <!-- (Multiple Choice Answers) -->
                             <RadzenCheckBoxList Value=@x.selectMultiAnswers TValue="McAnswer" Change="@((IEnumerable<McAnswer> value) => OnChangeMultipleChoice(x, value))" Orientation="Orientation.Vertical">
                                     <Items>
                                         @foreach (var antwort in x.McAnswers)
@@ -61,7 +61,7 @@ else
                         }
                         else if (x.QuestionType == QuestionType.GAP && x.AllowsMultiple)
                         {
-                            <!-- (Lückentext Choice Answers) Mohamad oder Houman -->
+                            <!-- (Gap Choice Answers) Mohamad or Houman -->
                         }
                     </RadzenStack>
                 </RadzenCard>
@@ -132,7 +132,7 @@ else
 
         if (dataList != null)
         {
-            await dataList.FirstPage(true);  // show first Question.
+            await dataList.FirstPage(true);  // show first question
         }
     }
 
@@ -142,13 +142,20 @@ else
 
         pageTitle = questionSet.Title;
         await loadData(QuestionSetId);
-        quizFoto = "/images/" + $"{QuestionSetId}.png";
+        if (QuestionSetId > 4 || quizFoto is null || quizFoto == "")
+        {
+            quizFoto = "/images/demo.png";
+        }
+        else
+        {
+            quizFoto = "/images/" + $"{QuestionSetId}.png";
+        }
     }
 
     async Task loadData(int questionSetId)
     {
         QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(questionSetId)).ToList();
-        QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.MC || x.QuestionType == QuestionType.TF).ToList(); // Temprory bcause the other Answers not yet made.
+        QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.MC || x.QuestionType == QuestionType.TF).ToList(); // temporary bcause the other answers were not yet made
     }
 
     async Task<QuestionSet> loadQuestionSet(int questionSetId)
@@ -164,7 +171,7 @@ else
             if (questionId.Value < 0)
                 playerPoints += 0;
             else 
-                playerPoints += questionId.Value; //add MC-Points to whole player points
+                playerPoints += questionId.Value; //add Multiple Choice points to whole player points
         }
         quizDone = true;  
     }
@@ -177,17 +184,17 @@ else
             {
                 if (question.QuestionType == QuestionType.MC && wrongAnsweredQuestions.Contains(question) && (pointsPerQuestion.ContainsKey(question.Id) ? pointsPerQuestion[question.Id] > 0 : false))
                 {
-                    playerPoints -= pointsPerQuestion[question.Id]; //for Multiple Choice: remove given Points for wrong question (negative value skipped, they are nnot added prevoiusly anyway)
+                    playerPoints -= pointsPerQuestion[question.Id]; //for Multiple Choice: remove given points for wrong question (negative value skipped, they are not added previously anyway)
                 }
                  question.selectMultiAnswers.Clear(); //reset checked box
             }
-            pointsPerQuestion.Clear(); //reset all gained Points; evalaluation should start all over again
-            previousSelectedMultipleAnswerIDs.Clear();//reset selected Answers; Muliple choice evalaluation should start all over again
+            pointsPerQuestion.Clear(); //reset all gained points; evaluation should start all over again
+            previousSelectedMultipleAnswerIDs.Clear(); //reset selected answers; Muliple choice evaluation should start all over again
             QuestionsList = wrongAnsweredQuestions.ToList();
 
             foreach(var question in QuestionsList)
             {
-                question.selectedAnswer = null; // Reset antworten.
+                question.selectedAnswer = null; // reset answers
             }
 
             barValue = 0;
@@ -199,13 +206,13 @@ else
 
             if(dataList != null)
             {
-                await dataList.FirstPage(true);  // show first Wrong Question.
+                await dataList.FirstPage(true);  // show first wrong question
             }
         }
     }
     #region SingleChoice
     /// <summary>
-    /// Singlechoice Evaluating
+    /// Single Choice Evaluating
     /// </summary>
     /// <param name="value"></param>
     /// <param name="question"></param> 
@@ -273,7 +280,7 @@ else
                 }
 
             }
-            //Option was UNchecked now
+            //Option was unchecked now
             else if (previousSelectedMultipleAnswerIDs.Contains(answerOptions.Id) && !selectedAnswers.Any(sA => sA.Id == answerOptions.Id))
             {
                 previousSelectedMultipleAnswerIDs.Remove(answerOptions.Id); //remove memorize that answer was selected
@@ -311,7 +318,7 @@ else
     #endregion
 
     /// <summary>
-    ///  support class to add points correctly
+    /// support class to add points correctly
     /// </summary>
     /// <param name="questionKey"></param>
     /// <param name="pointValue"></param>
