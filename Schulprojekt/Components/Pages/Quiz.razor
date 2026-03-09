@@ -142,14 +142,6 @@ else
 
         pageTitle = questionSet.Title;
         await loadData(QuestionSetId);
-        if (QuestionSetId > 4 || quizFoto is null || quizFoto == "")
-        {
-            quizFoto = "/images/demo.png";
-        }
-        else
-        {
-            quizFoto = "/images/" + $"{QuestionSetId}.png";
-        }
     }
 
     async Task loadData(int questionSetId)
