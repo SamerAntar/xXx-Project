@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Schulprojekt.Data;
 
 namespace Schulprojekt.Services
@@ -10,16 +11,16 @@ namespace Schulprojekt.Services
         /// Reference to the dbContext in the ContextPage.
         /// Reference is set during construction and is readonly.
         /// </summary>
-        private readonly ApplicationDbContext dbContext;
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
 
         /// <summary>
         /// Constructor of the service.
         /// Should only be instantiated in the ContextPage.
         /// </summary>
         /// <param name="dbContext">A reference to the private dbContext in the ContextPage.</param>
-        public QuestionSetService(ApplicationDbContext dbContext)
+        public QuestionSetService(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
-            this.dbContext = dbContext;
+            _contextFactory = contextFactory;
         }
 
         /// <summary>
@@ -27,10 +28,12 @@ namespace Schulprojekt.Services
         /// </summary>
         public QuestionSetService() { }
 
-        public virtual async Task<IEnumerable<QuestionSet?>> GetAllEntriesIncludingNavigationsAsync()
+        public virtual async Task<IEnumerable<QuestionSet>> GetAllEntriesIncludingNavigationsAsync()
         {
             try
             {
+                using var dbContext = await _contextFactory.CreateDbContextAsync();
+
                 return await dbContext.QuestionSets
                     .Include(x => x.Questions)
                     .Include(x => x.Team)
@@ -46,12 +49,19 @@ namespace Schulprojekt.Services
         {
             try
             {
+                using var dbContext = await _contextFactory.CreateDbContextAsync();
+
                 return await dbContext.QuestionSets
-                    .Include(x => x.Questions)
-                    .Include(x => x.Team)
-                .FirstOrDefaultAsync(x => x.Id == key);
+                    .Include(q => q.Questions)
+                        .ThenInclude(q => q.McAnswers)
+                    .Include(q => q.Questions)
+                        .ThenInclude(q => q.GapFields)
+                            .ThenInclude(g => g.GapOptions)
+                    .Include(q => q.Team)
+                    .Include(q => q.Thema)
+                    .FirstOrDefaultAsync(q => q.Id == key);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -61,11 +71,17 @@ namespace Schulprojekt.Services
         {
             try
             {
+                using var dbContext = await _contextFactory.CreateDbContextAsync();
+
                 return await dbContext.QuestionSets
-                    .Include(x => x.Questions)
-                    .Include(x => x.Team)
+                    .Include(qs => qs.Questions)
+                        .ThenInclude(q => q.McAnswers)
+                    .Include(qs => qs.Questions)
+                        .ThenInclude(q => q.GapFields)
+                            .ThenInclude(gf => gf.GapOptions)
+                        .Include(x => x.Team)
                     .Include(x => x.Thema)
-                    .Where(x => x.TeamId == themaId)
+                    .Where(x => x.ThemaId == themaId)
                     .ToListAsync();
             }
             catch (Exception)

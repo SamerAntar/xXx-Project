@@ -1,11 +1,13 @@
 ﻿@page "/Quiz"
-@page "/Quiz/SpielerID={SpielerId:int}/QuizID={QuestionSetId:int}"
+@page "/Quiz/ThemaID={ThemaId:int}/SpielerID={SpielerId:int}/QuizID={QuestionSetId:int}"
 @using Schulprojekt.Services
 @using Schulprojekt.Data
 @inject IQuestionService questionService
 @inject IQuestionSetService questionSetService
+@inject QuizStateService QuizStateService
 
 @inject NotificationService NotificationService
+@inject IQuestionSetProgressService QestionSetProgressService
 
 
 <PageTitle>@pageTitle</PageTitle>
@@ -22,7 +24,7 @@ else
                     PageSize="1" ShowPagingSummary=true AllowPaging="true" @ref="dataList" Data="@QuestionsList" TItem="Question">
         <Template Context="x">
             <RadzenStack Orientation="Orientation.Horizontal">
-                <RadzenCard Style="width:600px;">
+                <RadzenCard Style="width:700px;">
                     <!-- (Questions) -->
                     <RadzenStack>
                         <RadzenRow JustifyContent="JustifyContent.Center">
@@ -51,13 +53,13 @@ else
                         {
                                 <!-- (Multiple Choice Answers) -->
                             <RadzenCheckBoxList Value=@x.selectMultiAnswers TValue="McAnswer" Change="@((IEnumerable<McAnswer> value) => OnChangeMultipleChoice(x, value))" Orientation="Orientation.Vertical">
-                                    <Items>
-                                        @foreach (var antwort in x.McAnswers)
-                                        {
-                                            <RadzenCheckBoxListItem Text="@antwort.OptionText" Value="@antwort" />
-                                        }
-                                    </Items>
-                                </RadzenCheckBoxList> 
+                                <Items>
+                                    @foreach (var antwort in x.McAnswers)
+                                    {
+                                        <RadzenCheckBoxListItem Text="@antwort.OptionText" Value="@antwort" />
+                                    }
+                                </Items>
+                            </RadzenCheckBoxList>
                         }
                         else if (x.QuestionType == QuestionType.GAP && x.AllowsMultiple)
                         {
@@ -65,11 +67,10 @@ else
                         }
                     </RadzenStack>
                 </RadzenCard>
-                <RadzenCard Style="width:600px;">
-                    <RadzenImage Path="@quizFoto" Style="width:560px;"></RadzenImage>
+                <RadzenCard Style="width:700px;">
+                    <RadzenImage Path="@quizFoto" Style="width:100%; height:auto;"></RadzenImage>
                 </RadzenCard>
             </RadzenStack>
-           
         </Template>
     </RadzenDataList>
     @if (QuestionsList != null && (QuestionsList.All(x => x.selectedAnswer != null || x.selectMultiAnswers != null && x.selectMultiAnswers.Count > 0)) && !quizDone)
@@ -78,11 +79,12 @@ else
     }
     @if (quizDone)
     {
-        <CompletedQuizMessage 
-            PlayerPoints="playerPoints" 
-            QuestionSetId="QuestionSetId" 
-            SpielerId="SpielerId"
-            OnRetryWrong="ReloadWrongQuestions">
+        <CompletedQuizMessage PlayerPoints="playerPoints"
+                              CollectedPointsFromPlayer="collectedPointsFromPlayerPerQuiz"
+                              QuestionSetId="QuestionSetId"
+                              SpielerId="SpielerId"
+                              ThemaId="ThemaId"
+                              OnRetryWrong="ReloadWrongQuestions">
         </CompletedQuizMessage>
     }
 
@@ -93,8 +95,9 @@ else
 
 
 @code {
-    [Parameter] public int? SpielerId { get; set; }
+    [Parameter] public int SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
+    [Parameter] public int ThemaId { get; set; }
 
     RadzenDataList<Question>? dataList;
     List<Question> QuestionsList = new();
@@ -102,6 +105,8 @@ else
 
     HashSet<int> answeredQuestions = new HashSet<int>();
     double barValue = 0;
+
+    int? collectedPointsFromPlayerPerQuiz = 0;
 
     int playerPoints = 0;
     Dictionary<int, int> pointsPerQuestion = new Dictionary<int, int>();
@@ -118,7 +123,7 @@ else
         quizDone = false;
         barValue = 0;
         answeredQuestions.Clear();
-        pointsPerQuestion.Clear(); 
+        pointsPerQuestion.Clear();
         previousSelectedMultipleAnswerIDs.Clear();
 
         await determinQuizData();
@@ -142,13 +147,12 @@ else
 
         pageTitle = questionSet.Title;
         await loadData(QuestionSetId);
-        if (QuestionSetId > 4 || quizFoto is null || quizFoto == "")
+
+        quizFoto = "/images/" + $"{QuestionSetId}.png";
+
+        if (quizFoto is null || string.IsNullOrWhiteSpace(quizFoto))
         {
             quizFoto = "/images/demo.png";
-        }
-        else
-        {
-            quizFoto = "/images/" + $"{QuestionSetId}.png";
         }
     }
 
@@ -164,21 +168,64 @@ else
         return questionSet;
     }
 
-    void QuizAccomplisched()
+    async Task QuizAccomplisched()
     {
-        foreach(var questionId in pointsPerQuestion)
+        foreach (var questionId in pointsPerQuestion)
         {
             if (questionId.Value < 0)
                 playerPoints += 0;
             else 
                 playerPoints += questionId.Value; //add Multiple Choice points to whole player points
         }
-        quizDone = true;  
+
+        QuestionSet questionSet = await questionSetService.GetEntryByKeyIncludingNavigationsAsync(QuestionSetId);
+        string topic = questionSet.Title;
+
+        double MaxPoints = getMaxPointsForQuiz(questionSet);
+        double halfPoints = MaxPoints / 2;
+
+        // Punkte Pro Quiz berechnen.
+        collectedPointsFromPlayerPerQuiz = playerPoints - QuizStateService.QuizPoints;
+        QuizStateService.QuizPoints = playerPoints;
+
+        bool passed = collectedPointsFromPlayerPerQuiz >= halfPoints;
+
+        if (passed)
+        {
+            var progress = new QuestionSetProgress
+            {
+                Topic = topic,
+                SpielerId = SpielerId,
+                ThemaId = ThemaId,
+                QuestionSetId = QuestionSetId,
+                Points = collectedPointsFromPlayerPerQuiz,
+                MaxPoints = MaxPoints,
+                IsPassed = passed
+            };
+
+            await QestionSetProgressService.AddEntryAsync(progress);
+        }
+
+        quizDone = true;
+    }
+
+    private int getMaxPointsForQuiz(QuestionSet questionSet)
+    {
+        int max = 0;
+
+        foreach (var q in questionSet.Questions)
+        {
+            max += q.McAnswers.Where(a => a.IsCorrect).Sum(a => a.Points);
+
+            max += q.GapFields.SelectMany(g => g.GapOptions).Count(go => go.IsCorrect);
+        }
+
+        return max;
     }
 
     public async Task ReloadWrongQuestions()
     {
-        if(wrongAnsweredQuestions.Any())
+        if (wrongAnsweredQuestions.Any())
         {
             foreach (var question in QuestionsList)
             {
@@ -186,13 +233,13 @@ else
                 {
                     playerPoints -= pointsPerQuestion[question.Id]; //for Multiple Choice: remove given points for wrong question (negative value skipped, they are not added previously anyway)
                 }
-                 question.selectMultiAnswers.Clear(); //reset checked box
+                question.selectMultiAnswers.Clear(); //reset checked box
             }
             pointsPerQuestion.Clear(); //reset all gained points; evaluation should start all over again
             previousSelectedMultipleAnswerIDs.Clear(); //reset selected answers; Muliple choice evaluation should start all over again
             QuestionsList = wrongAnsweredQuestions.ToList();
 
-            foreach(var question in QuestionsList)
+            foreach (var question in QuestionsList)
             {
                 question.selectedAnswer = null; // reset answers
             }
@@ -204,7 +251,7 @@ else
 
             await InvokeAsync(StateHasChanged);
 
-            if(dataList != null)
+            if (dataList != null)
             {
                 await dataList.FirstPage(true);  // show first wrong question
             }
@@ -215,7 +262,7 @@ else
     /// Single Choice Evaluating
     /// </summary>
     /// <param name="value"></param>
-    /// <param name="question"></param> 
+    /// <param name="question"></param>
     /// <author>Samer</author>
     void SinglechoiceEvaluating(McAnswer value, Question question)
     {
@@ -266,7 +313,7 @@ else
         int points = 0;
         bool hasWrong = false;
 
-        foreach(var answerOptions in question.McAnswers)
+        foreach (var answerOptions in question.McAnswers)
         {
             //Option was checked now
             if (!previousSelectedMultipleAnswerIDs.Contains(answerOptions.Id) && selectedAnswers.Any(sA => sA.Id == answerOptions.Id))
@@ -274,7 +321,8 @@ else
                 previousSelectedMultipleAnswerIDs.Add(answerOptions.Id); //memorize that answer was selected
                 if (answerOptions.IsCorrect)
                     points += answerOptions.Points;
-                else {
+                else
+                {
                     points -= 1;//answerOptions.Points;
                     hasWrong = true;
                 }
@@ -285,7 +333,8 @@ else
             {
                 previousSelectedMultipleAnswerIDs.Remove(answerOptions.Id); //remove memorize that answer was selected
                 //reverse points
-                if (answerOptions.IsCorrect) {
+                if (answerOptions.IsCorrect)
+                {
                     points -= answerOptions.Points;
                     hasWrong = true;
                 }
@@ -326,7 +375,7 @@ else
     {
         if (pointsPerQuestion.ContainsKey(questionKey))
             pointsPerQuestion[questionKey] = pointsPerQuestion[questionKey] + pointValue;
-        else 
-            pointsPerQuestion.Add(questionKey , pointValue);
+        else
+            pointsPerQuestion.Add(questionKey, pointValue);
     }
 }

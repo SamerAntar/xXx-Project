@@ -4,7 +4,7 @@ using Schulprojekt.Data;
 
 namespace Schulprojekt.Services
 {
-    public class QuestionService : IQuestionService
+    public class QuestionSetProgressService : IQuestionSetProgressService
     {
         /// <summary>
         /// Reference to the dbContext in the ContextPage.
@@ -17,7 +17,7 @@ namespace Schulprojekt.Services
         /// Should only be instantiated in the ContextPage.
         /// </summary>
         /// <param name="dbContext">A reference to the private dbContext in the ContextPage.</param>
-        public QuestionService(IDbContextFactory<ApplicationDbContext> contextFactory)
+        public QuestionSetProgressService(IDbContextFactory<ApplicationDbContext> contextFactory)
         {
             _contextFactory = contextFactory;
         }
@@ -25,19 +25,16 @@ namespace Schulprojekt.Services
         /// <summary>
         /// Default constructor required for mocking
         /// </summary>
-        public QuestionService() { }
+        public QuestionSetProgressService() { }
 
-        public virtual async Task<IEnumerable<Question>> GetAllEntriesIncludingNavigationsAsync()
+        public async Task<IEnumerable<QuestionSetProgress>> GetAllProgressesWithNavigationsAsync()
         {
             try
             {
                 using var dbContext = await _contextFactory.CreateDbContextAsync();
 
-                return await dbContext.Questions
-                    .Include(x => x.McAnswers)
-                    .Include(x => x.QuestionSet)
-                    .Include(x => x.GapFields)
-                    .ToListAsync();
+                return await dbContext.QuestionSetProgresses
+                                        .ToListAsync();
             }
             catch (Exception)
             {
@@ -45,18 +42,25 @@ namespace Schulprojekt.Services
             }
         }
 
-        public virtual async Task<IEnumerable<Question>> GetAllEntriesByQuestionSetIncludingNavigationsAsync(int questionSetID)
+        public async Task<QuestionSetProgress> AddEntryAsync(QuestionSetProgress item)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+            var entity = await dbContext.QuestionSetProgresses.AddAsync(item);
+            await dbContext.SaveChangesAsync();
+
+            return entity.Entity;
+        }
+
+        public virtual async Task<IEnumerable<QuestionSetProgress>> GetEntriesByPlayerId(int playerId)
         {
             try
             {
                 using var dbContext = await _contextFactory.CreateDbContextAsync();
 
-                return await dbContext.Questions
-                    .Include(x => x.McAnswers)
-                    .Include(x => x.QuestionSet)
-                    .Include(x => x.GapFields)
-                    .Where(x => x.QuestionSet.Id == questionSetID)
-                    .ToListAsync();
+                return await dbContext.QuestionSetProgresses
+                                        .Where(x => x.SpielerId == playerId)
+                                        .ToListAsync();
             }
             catch (Exception)
             {

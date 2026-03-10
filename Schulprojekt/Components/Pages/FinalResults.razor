@@ -1,0 +1,161 @@
+﻿@page "/FinalResults"
+@page "/FinalResults/SpielerID={SpielerId:int}/QuestionSetID={QuestionSetId:int}"
+@inject IQuestionSetService questionSetService
+@inject IQuestionSetProgressService QuestionSetProgressService
+@using Schulprojekt.Data
+@using Schulprojekt.Services
+@inject NavigationManager Navi
+
+<PageTitle>Final Results</PageTitle>
+
+<RadzenRow JustifyContent="JustifyContent.Center" class="rz-mt-6">
+    <RadzenColumn Size="8">
+        <!-- HERO CARD -->
+        <RadzenCard class="hero-card rz-shadow-6 rz-p-6">
+            <RadzenStack AlignItems="AlignItems.Center" Gap="1rem">
+                <RadzenHeading Size="H1">
+                    🎉 Game Completed!
+                </RadzenHeading>
+                <RadzenHeading Size="H2" class="score-text">
+                    @totalPoints / @totalMax
+                </RadzenHeading>
+                <RadzenHeading Size="H3">
+                    @percent%
+                </RadzenHeading>
+                <RadzenProgressBar Value="@percent"
+                                   Style="width:80%; height:20px;">
+                    <Template>
+                        @($"{percent:0.00}%")
+                    </Template>
+                </RadzenProgressBar>
+                <RadzenIcon Icon="@MedalIcon"
+                            Style="@($"font-size:70px; color:{MedalColor};")" />
+
+                <RadzenText Style="font-size:18px;">
+                    @MotivationText
+                </RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+        <!-- CHART -->
+        <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4">
+            <RadzenHeading Size="H4">Performance Overview</RadzenHeading>
+
+            <RadzenChart Style="height:350px;">
+                <RadzenColumnSeries Data="@QuestionSetProgressList"
+                                    CategoryProperty="Topic"
+                                    ValueProperty="Points" />
+                <RadzenCategoryAxis />
+                <RadzenValueAxis />
+            </RadzenChart>
+        </RadzenCard>
+        <!-- DETAIL GRID -->
+        <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4">
+            <RadzenHeading Size="H4">Detailed Results</RadzenHeading>
+            <RadzenDataGrid Data="@QuestionSetProgressList" TItem="QuestionSetProgress">
+                <Columns>
+                    <RadzenDataGridColumn TItem="QuestionSetProgress" Property="Topic" Title="Topic" />
+                    <RadzenDataGridColumn TItem="QuestionSetProgress" Property="Points" Title="Points" />
+                    <RadzenDataGridColumn TItem="QuestionSetProgress" Property="MaxPoints" Title="Max Points" />
+                    <RadzenDataGridColumn TItem="QuestionSetProgress" Title="Percent (%)">
+                        <Template Context="item">
+                            @{
+                                var percent = item.MaxPoints == 0 ? 0 : (double)item.Points / item.MaxPoints * 100;
+                            }
+                            @($"{percent:0.##}%")
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="QuestionSetProgress" Title="Status">
+                        <Template Context="item">
+                            @if (item.Points >= item.MaxPoints / 2)
+                            {
+                                <RadzenBadge Text="Passed" BadgeStyle="BadgeStyle.Success" />
+                            }
+                            else
+                            {
+                                <RadzenBadge Text="Failed" BadgeStyle="BadgeStyle.Danger" />
+                            }
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenCard>
+
+        <!-- ACTION BUTTONS -->
+        <RadzenStack Orientation="Orientation.Horizontal"
+                     JustifyContent="JustifyContent.Center"
+                     Gap="1rem"
+                     class="rz-mt-4">
+            <RadzenButton Click=@GoHome Icon="home" Text="Zurück zur Startseite" Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Info" />
+        </RadzenStack>
+    </RadzenColumn>
+</RadzenRow>
+
+<style>
+    .hero-card {
+        border-radius: 20px;
+        background: linear-gradient(145deg, #ffffff, #f4f6fa);
+        text-align: center;
+    }
+
+    .score-text {
+        font-size: 48px;
+        font-weight: bold;
+    }
+</style>
+
+@code {
+
+    [Parameter] public int SpielerId { get; set; }
+    [Parameter] public int QuestionSetId { get; set; }
+
+
+    List<QuestionSet> QuestionSetList = new();
+    List<QuestionSetProgress> QuestionSetProgressList = new();
+
+    double? totalPoints = 0;
+    double? totalMax = 0;
+    double percent = 0;
+
+    string MedalIcon => percent switch
+    {
+        >= 90 => "emoji_events",
+        >= 75 => "military_tech",
+        >= 60 => "workspace_premium",
+        _ => "sentiment_dissatisfied"
+    };
+
+    string MedalColor => percent switch
+    {
+        >= 90 => "#FFD700", // Gold
+        >= 75 => "#C0C0C0", // Silver
+        >= 60 => "#cd7f32", // Bronze
+        _ => "#f44336"
+    };
+
+    string MotivationText => percent switch
+    {
+        >= 90 => "Hervorragende Leistung! Du beherrschst alle Themen!",
+        >= 75 => "Super! Du hast ein sehr gutes Wissen.",
+        >= 60 => "Gute Arbeit! Etwas mehr Übung macht es perfekt.",
+        _ => "Übe weiter und versuche es noch einmal!"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        //Todo: Topic distinct anzeigen.
+
+        QuestionSetProgressList = (await QuestionSetProgressService.GetEntriesByPlayerId(SpielerId)).ToList();
+
+        QuestionSetList = (await questionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(QuestionSetId)).ToList();
+
+        totalPoints = QuestionSetProgressList.Sum(x => x.Points);
+        totalMax = QuestionSetProgressList.Sum(x => x.MaxPoints);
+        percent = totalMax == 0 ? 0 : (totalPoints ?? 0) / (totalMax ?? 1) * 100;
+    }
+
+    void GoHome()
+    {
+        Navi.NavigateTo("/");
+    }
+}
