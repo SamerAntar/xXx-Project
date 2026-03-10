@@ -2,6 +2,7 @@
 @page "/Quiz/ThemaID={ThemaId:int}/SpielerID={SpielerId:int}/QuizID={QuestionSetId:int}"
 @using Schulprojekt.Services
 @using Schulprojekt.Data
+@using System.Text.RegularExpressions
 @inject IQuestionService questionService
 @inject IQuestionSetService questionSetService
 @inject QuizStateService QuizStateService
@@ -30,8 +31,25 @@ else
                         <RadzenRow JustifyContent="JustifyContent.Center">
                             @* <RadzenImage Path="@path" Style="width: 100px; height: 100px; border-radius: 50%;" /> *@
                         </RadzenRow>
-                        <RadzenRow>
-                            <b>@(x.StartText)</b>
+                        <RadzenRow @key="x.Id">
+                            <b>
+                                @foreach (var part in SplitGapQuestionText(x.StartText))
+                                {
+                                    if (part.IsGap)
+                                    {
+                                        <RadzenTextBox Immediate="true"
+                                                       Placeholder="Antwort hier eingeben..."
+                                                       Value="@GetGapValue(x.Id, part.GapIndex)"
+                                                       Change="@(value => GapTextEvaluation(value, x, part.GapIndex))"
+                                                       Style="width: 42%; margin: 1% auto; background-color: #eaeaea;"
+                                                        />
+                                    }
+                                    else
+                                    {
+                                        @part.Text
+                                    }
+                                }
+                            </b>
                         </RadzenRow>
                     </RadzenStack>
                     <hr />
@@ -63,7 +81,8 @@ else
                         }
                         else if (x.QuestionType == QuestionType.GAP && x.AllowsMultiple)
                         {
-                            <!-- (Gap Choice Answers) Mohamad or Houman -->
+                            <!-- (GapText Answers) -->
+                            <!-- Gaps are loaded previously in the question, see method ReplaceGapsWithTextfields(Question question)-->
                         }
                     </RadzenStack>
                 </RadzenCard>
@@ -73,7 +92,7 @@ else
             </RadzenStack>
         </Template>
     </RadzenDataList>
-    @if (QuestionsList != null && (QuestionsList.All(x => x.selectedAnswer != null || x.selectMultiAnswers != null && x.selectMultiAnswers.Count > 0)) && !quizDone)
+    @if (QuestionsList != null && barValue == QuestionsList.Count() && (QuestionsList.All(x => x.selectedAnswer != null || (x.selectMultiAnswers != null && x.selectMultiAnswers.Count > 0) || (filledAnswersInGaps.Where(y => y.Key.QuestionId == x.Id).Count() == x.GapFields.Count()))) && !quizDone)
     {
         <RadzenButton Variant="Variant.Flat" Text="Abgeben" Click="QuizAccomplisched" ButtonStyle="ButtonStyle.Success" />
     }
@@ -94,7 +113,7 @@ else
 }
 
 
-@code {
+@code { 
     [Parameter] public int SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
     [Parameter] public int ThemaId { get; set; }
@@ -117,6 +136,8 @@ else
 
     McAnswer? selectedSingleChoiceAnswer;
     HashSet<int> previousSelectedMultipleAnswerIDs = new HashSet<int>();
+    Dictionary<(int QuestionId, int GapIndex), bool> filledGapsInQuestionWithStates = new();
+    Dictionary<(int QuestionId, int GapIndex), string> filledAnswersInGaps = new();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -125,6 +146,8 @@ else
         answeredQuestions.Clear();
         pointsPerQuestion.Clear();
         previousSelectedMultipleAnswerIDs.Clear();
+        filledAnswersInGaps.Clear();
+        filledGapsInQuestionWithStates.Clear();
 
         await determinQuizData();
 
@@ -159,7 +182,8 @@ else
     async Task loadData(int questionSetId)
     {
         QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(questionSetId)).ToList();
-        QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.MC || x.QuestionType == QuestionType.TF).ToList(); // temporary bcause the other answers were not yet made
+        //QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.MC || x.QuestionType == QuestionType.TF).ToList(); // Temprory bcause the other Answers not yet made.
+        QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.GAP).ToList();
     }
 
     async Task<QuestionSet> loadQuestionSet(int questionSetId)
@@ -235,8 +259,10 @@ else
                 }
                 question.selectMultiAnswers.Clear(); //reset checked box
             }
-            pointsPerQuestion.Clear(); //reset all gained points; evaluation should start all over again
-            previousSelectedMultipleAnswerIDs.Clear(); //reset selected answers; Muliple choice evaluation should start all over again
+            pointsPerQuestion.Clear(); //reset all gained Points; evalaluation should start all over again
+            previousSelectedMultipleAnswerIDs.Clear();//reset selected Answers; Muliple choice evalaluation should start all over again
+            filledAnswersInGaps.Clear();
+            filledGapsInQuestionWithStates.Clear();
             QuestionsList = wrongAnsweredQuestions.ToList();
 
             foreach (var question in QuestionsList)
@@ -308,10 +334,12 @@ else
     /// <param name="selectedAnswers"></param>
     /// <param name="question"></param>
     /// <author>Maxim</author>
-    void MultiplechoiceEvaluating(IEnumerable<McAnswer> selectedAnswers, Question question)
+    void MultiplechoiceEvaluating(IEnumerable<McAnswer>? selectedAnswers, Question question)
     {
         int points = 0;
         bool hasWrong = false;
+        if (selectedAnswers == null)
+            return;
 
         foreach (var answerOptions in question.McAnswers)
         {
@@ -365,6 +393,119 @@ else
         }
     }
     #endregion
+
+    #region GapText
+
+    /// <summary>
+    ///  Part Class to split Question Text in normal Text and Gaps which should be replaced with Textareas
+    /// </summary>
+    /// <author>Maxim</author>
+    public class TextPart
+    {
+        public string? Text { get; set; }
+        public bool IsGap { get; set; }
+        public int GapIndex { get; set; }
+    }
+
+    /// <summary>
+    /// Split Question Text between the Gaps to enable Textarea
+    /// </summary>
+    /// <param name="text"></param>
+    /// <author>Maxim</author>
+    List<TextPart> SplitGapQuestionText(string? text)
+    {
+        var result = new List<TextPart>();
+        if (!string.IsNullOrEmpty(text))
+        {
+            var parts = Regex.Split(text, "(_{2,})");
+            int gapIndex = 0;
+
+            foreach (var p in parts)
+            {
+                if (Regex.IsMatch(p, "_{2,}"))
+                {
+                    result.Add(new TextPart { IsGap = true, GapIndex = gapIndex });
+                    gapIndex++;
+                }
+                else
+                    result.Add(new TextPart { Text = p });
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    ///    Get the value for textarea (needed when Player "returns" to the question)
+    /// </summary>
+    /// <param name="questionId"></param>
+    /// <param name="gapIndex"></param>
+    /// <returns></returns>
+    string GetGapValue(int questionId, int gapIndex)
+    {
+        if (filledAnswersInGaps.TryGetValue((questionId, gapIndex), out var value))
+            return value;
+
+        return "";
+    }
+
+    /// <summary>
+    /// Gap Text Evaluating
+    /// </summary>
+    /// <param name="value">Text the user types in</param>
+    /// <param name="question"></param>
+    /// <author>Maxim</author>
+    void GapTextEvaluation(String value, Question question, int gapIndex)
+    {
+        filledAnswersInGaps[(question.Id, gapIndex)] = value;
+        //the gap is empty/null
+        if (string.IsNullOrEmpty(value)) {
+            if (filledGapsInQuestionWithStates.ContainsKey((question.Id, gapIndex)))
+            {
+                filledGapsInQuestionWithStates.Remove((question.Id, gapIndex)); //removes the gap filled mark
+                if (answeredQuestions.Contains(question.Id))
+                {
+                    barValue--;
+                    answeredQuestions.Remove(question.Id);
+                }
+            }
+            return;
+        }
+
+        if (!filledGapsInQuestionWithStates.ContainsKey((question.Id, gapIndex)))
+        {
+            filledGapsInQuestionWithStates[(question.Id, gapIndex)] = false; //mark that the gap was filled
+        }
+
+        if (question.GapFields.Any(a => a.GapIndex == gapIndex && !String.IsNullOrEmpty(a.CorrectText) ? a.CorrectText.Equals(value, a.CaseSensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal) : false))
+        {
+            //correct gapIndex and answer text
+            handleAddPoints(question.Id, 1);
+            filledGapsInQuestionWithStates[(question.Id, gapIndex)] = true;
+            if (filledGapsInQuestionWithStates.Where(x => x.Key.QuestionId == question.Id).Count() == question.GapFields.Count() && filledGapsInQuestionWithStates.Where(x => x.Key.QuestionId == question.Id).All(x => x.Value))
+                wrongAnsweredQuestions.Remove(question); //all gaps for this question were answered and are correct -> remove wrong question marker
+        }
+        else
+        {
+            if (!wrongAnsweredQuestions.Contains(question))
+                wrongAnsweredQuestions.Add(question);
+            if (pointsPerQuestion.ContainsKey(question.Id) && filledGapsInQuestionWithStates.TryGetValue((question.Id, gapIndex), out bool gapState))
+            {
+                if (gapState == true)
+                    handleAddPoints(question.Id, pointsPerQuestion[question.Id]*-1);  //Remove previously given point for that gap
+            }
+        }
+
+        //also validates, if all gaps were answered
+        if (!answeredQuestions.Contains(question.Id) && filledGapsInQuestionWithStates.Where(x => x.Key.QuestionId == question.Id).Count() == question.GapFields.Count())
+        {
+            barValue++;
+            answeredQuestions.Add(question.Id);
+        }
+    }
+
+
+#endregion
 
     /// <summary>
     /// support class to add points correctly
