@@ -7,16 +7,28 @@ namespace Unittest
     [TestClass]
     public class HomeGameLogicTests
     {
+        // -------------------------
+        // IsPlayerMissing
+        // -------------------------
+
         [TestMethod]
-        public void IsPlayerMissing_ReturnsTrue_WhenNullOrWhitespace()
+        public void IsPlayerMissing_ReturnsTrue_WhenNull()
         {
             string? player = null;
             Assert.IsTrue(HomeGameLogic.IsPlayerMissing(player));
+        }
 
-            player = "";
+        [TestMethod]
+        public void IsPlayerMissing_ReturnsTrue_WhenEmpty()
+        {
+            string? player = "";
             Assert.IsTrue(HomeGameLogic.IsPlayerMissing(player));
+        }
 
-            player = "   ";
+        [TestMethod]
+        public void IsPlayerMissing_ReturnsTrue_WhenWhitespace()
+        {
+            string? player = "   ";
             Assert.IsTrue(HomeGameLogic.IsPlayerMissing(player));
         }
 
@@ -27,26 +39,29 @@ namespace Unittest
             Assert.IsFalse(HomeGameLogic.IsPlayerMissing(player));
         }
 
+        // -------------------------
+        // IsQuestionSetMissing
+        // -------------------------
+
         [TestMethod]
-        public void IsQuestionSetMissing_ReturnsTrue_WhenNullOrEmptyTitle()
+        public void IsQuestionSetMissing_ReturnsTrue_WhenQuestionSetIsNull()
         {
-            QuestionSet? questionSet = new QuestionSet();
-
-            // Case 1: Title = ""
-            questionSet.Title = "";
+            QuestionSet? questionSet = null;
             Assert.IsTrue(HomeGameLogic.IsQuestionSetMissing(questionSet));
+        }
 
-            // Case 2 whitespace Title
-            questionSet.Title = "   ";
+        [TestMethod]
+        public void IsQuestionSetMissing_ReturnsTrue_WhenTitleIsEmpty()
+        {
+            var questionSet = new QuestionSet { Title = "" };
             Assert.IsTrue(HomeGameLogic.IsQuestionSetMissing(questionSet));
+        }
 
-            // Case 3: questionSet = null
-            questionSet = null;
+        [TestMethod]
+        public void IsQuestionSetMissing_ReturnsTrue_WhenTitleIsWhitespace()
+        {
+            var questionSet = new QuestionSet { Title = "   " };
             Assert.IsTrue(HomeGameLogic.IsQuestionSetMissing(questionSet));
-
-            // Case : Valid title (NEUES Objekt, weil Objekt vorher null gesetzt)
-            questionSet = new QuestionSet { Title = "test" };
-            Assert.IsFalse(HomeGameLogic.IsQuestionSetMissing(questionSet));
         }
 
         [TestMethod]
@@ -56,36 +71,49 @@ namespace Unittest
             Assert.IsFalse(HomeGameLogic.IsQuestionSetMissing(questionSet));
         }
 
+        // -------------------------
+        // IsThemeMissing
+        // -------------------------
+
         [TestMethod]
-        public void IsThemeMissing_ReturnsTrue_WhenNullOrEmptyName()
+        public void IsThemeMissing_ReturnsTrue_WhenThemaIsNull()
         {
             Thema? thema = null;
             Assert.IsTrue(HomeGameLogic.IsThemeMissing(thema));
+        }
 
-            thema = new Thema { Name = null };
+        [TestMethod]
+        public void IsThemeMissing_ReturnsTrue_WhenNameIsEmpty()
+        {
+            var thema = new Thema { Name = "" };
             Assert.IsTrue(HomeGameLogic.IsThemeMissing(thema));
+        }
 
-            thema = new Thema { Name = "" };
-            Assert.IsTrue(HomeGameLogic.IsThemeMissing(thema));
-
-            thema = new Thema { Name = "   " };
+        [TestMethod]
+        public void IsThemeMissing_ReturnsTrue_WhenNameIsWhitespace()
+        {
+            var thema = new Thema { Name = "   " };
             Assert.IsTrue(HomeGameLogic.IsThemeMissing(thema));
         }
 
         [TestMethod]
         public void IsThemeMissing_ReturnsFalse_WhenNameExists()
         {
-            Thema? thema = new Thema { Name = "Hunter x Hunter" };
+            var thema = new Thema { Name = "Hunter x Hunter" };
             Assert.IsFalse(HomeGameLogic.IsThemeMissing(thema));
         }
+
+        // -------------------------
+        // BuildQuizRoute
+        // -------------------------
 
         [TestMethod]
         public void BuildQuizRoute_ReturnsCorrectUrl()
         {
-            var themaId = 5;
+            var spielerId = 5;
             var questionSetId = 10;
 
-            var url = HomeGameLogic.BuildQuizRoute(themaId, questionSetId);
+            var url = HomeGameLogic.BuildQuizRoute(spielerId, questionSetId);
 
             Assert.AreEqual("/Quiz/5/10", url);
         }
