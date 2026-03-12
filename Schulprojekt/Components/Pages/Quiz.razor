@@ -355,7 +355,7 @@ else
                     points += answerOptions.Points;
                 else
                 {
-                    points -= 1;//answerOptions.Points;
+                    points -= answerOptions.Points;
                     hasWrong = true;
                 }
 
@@ -371,7 +371,7 @@ else
                     hasWrong = true;
                 }
                 else
-                    points += 1; //answerOptions.Points;
+                    points += answerOptions.Points;
             }
             //Option is correct, but not checked by the player
             else if (!selectedAnswers.Any(sA => sA.Id == answerOptions.Id) && answerOptions.IsCorrect)
