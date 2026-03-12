@@ -124,7 +124,7 @@
         {
             points += q.McAnswers.Where(x => x.IsCorrect).Sum(x => x.Points);
 
-            points += q.GapFields.SelectMany(x => x.GapOptions).Count(x => x.IsCorrect);
+            points += q.GapFields.Count();
         }
 
         return points;

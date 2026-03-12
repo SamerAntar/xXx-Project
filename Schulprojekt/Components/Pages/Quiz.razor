@@ -113,7 +113,7 @@ else
 }
 
 
-@code { 
+@code {
     [Parameter] public int SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
     [Parameter] public int ThemaId { get; set; }
@@ -182,8 +182,9 @@ else
     async Task loadData(int questionSetId)
     {
         QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(questionSetId)).ToList();
-        //QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.MC || x.QuestionType == QuestionType.TF).ToList(); // Temprory bcause the other Answers not yet made.
-        QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.GAP).ToList();
+        //QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.MC).ToList(); //TEST Multiple Choice only
+        //QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.TF).ToList(); //TEST Single Choice only
+        //QuestionsList = QuestionsList.Where(x => x.QuestionType == QuestionType.GAP).ToList(); //TEST Gap Text only
     }
 
     async Task<QuestionSet> loadQuestionSet(int questionSetId)
@@ -239,9 +240,8 @@ else
 
         foreach (var q in questionSet.Questions)
         {
-            max += q.McAnswers.Where(a => a.IsCorrect).Sum(a => a.Points);
-
-            max += q.GapFields.SelectMany(g => g.GapOptions).Count(go => go.IsCorrect);
+            max += q.McAnswers.Where(a => a.IsCorrect).Sum(a => a.Points); //Count points of correct answer per question (1 for Single, 0 for Gaps)
+            max += q.GapFields.Count(); //Count number of gap fields per question (0 if Multiple/Single)
         }
 
         return max;
@@ -298,6 +298,10 @@ else
         if (value.IsCorrect)
         {
             handleAddPoints(question.Id, value.Points);
+            if (wrongAnsweredQuestions.Contains(question))
+            {
+                wrongAnsweredQuestions.Remove(question);
+            }
         }
         else
         {
@@ -492,8 +496,9 @@ else
             if (pointsPerQuestion.ContainsKey(question.Id) && filledGapsInQuestionWithStates.TryGetValue((question.Id, gapIndex), out bool gapState))
             {
                 if (gapState == true)
-                    handleAddPoints(question.Id, pointsPerQuestion[question.Id]*-1);  //Remove previously given point for that gap
+                    handleAddPoints(question.Id, -1);  //Remove previously given point for that gap
             }
+            filledGapsInQuestionWithStates[(question.Id, gapIndex)] = false;
         }
 
         //also validates, if all gaps were answered
