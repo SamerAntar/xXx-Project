@@ -1,0 +1,155 @@
+﻿@page "/MenuSeite"
+@page "/MenuSeite/SpielerID={SpielerId:int}"
+@using Schulprojekt.Data
+@using Schulprojekt.Services
+@inject ISpielerService SpielerService
+@inject IQuestionSetService QuestionSetService
+@inject IThemaService ThemaService
+@inject NotificationService NotificationService
+@inject NavigationManager Navi
+
+<PageTitle>Homepage</PageTitle>
+
+<div class="home-background" style="background-image: url('/images/HomeMain.png')">
+    <div class="home-content">
+        <h2>Willkommen beim Hunter X Hunter Spiel</h2>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Style="margin-top:30px;">
+            <div style="width:300px;">
+                <!-- #Row 1 DropdownList (Themen) -->
+                <RadzenStack>
+                    <RadzenDropDown Placeholder="--Bitte Thema auswählen--"
+                                    TValue="Thema"
+                                    Data="@ThemenList"
+                                    TextProperty="Name"
+                                    @bind-Value="selectedthema"
+                                    Change="LoadQuestionSet" />
+                    @if (IsThemeMissing())
+                    {
+                        <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                                     Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark">
+                            Thema ist erforderlich!
+                        </RadzenAlert>
+                    }
+                </RadzenStack>
+            </div>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="20px" JustifyContent="JustifyContent.Center" Style="margin-top:20px;">
+
+            <div style="width:300px;">
+                <RadzenStack>
+                    <RadzenTextBox @bind-Value="playerName" Placeholder="Spielername eingeben" />
+                    @if (IsPlayerMissing())
+                    {
+                        <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                                     Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark">
+                            Spieler ist erforderlich!
+                        </RadzenAlert>
+                    }
+                </RadzenStack>
+            </div>
+
+            <div style="width:300px;">
+                <RadzenStack>
+                    <RadzenDropDown Placeholder="--Bitte Quiz auswählen--"
+                                    AllowClear="true"
+                                    TValue="QuestionSet"
+                                    Data="@QuestionSetsList"
+                                    TextProperty="Title"
+                                    @bind-Value="selectedQuestionSet" />
+
+                    @if (IsQuestionSetMissing())
+                    {
+                        <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                                     Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark">
+                            Quiz ist erforderlich!
+                        </RadzenAlert>
+                    }
+                </RadzenStack>
+            </div>
+        </RadzenStack>
+        <div style="display:flex; justify-content:center; margin-top:40px;">
+            <RadzenButton Variant="Variant.Flat" Click="StartGame" Text="Quiz starten" ButtonStyle="ButtonStyle.Success" />
+        </div>
+    </div>
+    <RadzenImage Path="/images/Hisokaaa.png"
+                 Style="position:absolute;
+                        bottom:20px;
+                        right:20px;
+                        width:350px;
+                        height:auto;" />
+
+</div>
+
+
+@code {
+    [Parameter] public int SpielerId { get; set; }
+    List<Spieler> SpielerList = new();
+    List<QuestionSet> QuestionSetsList = new();
+    List<Thema> ThemenList = new();
+    QuestionSet? selectedQuestionSet;
+    Thema selectedthema;
+
+    string playerName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ThemenList = (await ThemaService.GetAllEntriesIncludingNavigationsAsync()).ToList();
+    }
+
+    /// <summary>
+    /// Player Validation.
+    /// </summary>
+    /// <returns></returns>
+    private bool IsPlayerMissing() => string.IsNullOrWhiteSpace(playerName);
+
+    /// <summary>
+    /// QuestionSet Validation.
+    /// </summary>
+    /// <returns></returns>
+    private bool IsQuestionSetMissing() => string.IsNullOrEmpty(selectedQuestionSet?.Title);
+
+    /// <summary>
+    /// QuestionSet Validation.
+    /// </summary>
+    /// <returns></returns>
+    private bool IsThemeMissing() => string.IsNullOrEmpty(selectedthema?.Name);
+
+    /// <summary>
+    /// Navigate to the
+    /// </summary>
+    async Task StartGame()
+    {
+        if (string.IsNullOrWhiteSpace(playerName) || selectedQuestionSet is null)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Info,
+                Summary = "Fehlende Eingaben",
+                Detail = "Bitte Thema, Spieler und Quiz auswählen"
+            });
+
+            return;
+        }
+
+        var spieler = new Spieler { Name = playerName };
+        var savedPlayer = await SpielerService.AddOrUpdateAsync(spieler);
+
+        if (savedPlayer is not null)
+        {
+            Navi.NavigateTo($"/Quiz/ThemaID={selectedthema.Id}/SpielerID={savedPlayer.Id}/QuizID={selectedQuestionSet.Id}");
+        }
+    }
+
+    async Task LoadQuestionSet()
+    {
+        if (selectedthema is not null)
+        {
+            QuestionSetsList = (await QuestionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(selectedthema.Id)).ToList();
+        }
+        else
+        {
+            QuestionSetsList.Clear();
+        }
+    }
+}
+

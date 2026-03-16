@@ -47,25 +47,10 @@ namespace Schulprojekt.Services
             {
                 using var dbContext = await _contextFactory.CreateDbContextAsync();
 
-                // Prüfen, ob der Spielername schon existiert
-                var existing = await dbContext.Players
-                                              .FirstOrDefaultAsync(s => s.Name == item.Name);
-
-                if (existing != null)
-                {
-                    // Existierender Spieler → Daten ersetzen / updaten
-                    existing.Name = item.Name; // ggf. weitere Felder updaten
-                    dbContext.Players.Update(existing);
-                    await dbContext.SaveChangesAsync();
-                    return existing;
-                }
-                else
-                {
-                    // Neuer Spieler → hinzufügen
-                    var addedEntry = await dbContext.Players.AddAsync(item);
-                    await dbContext.SaveChangesAsync();
-                    return addedEntry.Entity;
-                }
+                // Neuer Spieler → hinzufügen
+                var addedEntry = await dbContext.Players.AddAsync(item);
+                await dbContext.SaveChangesAsync();
+                return addedEntry.Entity;                
             }
             catch
             {
