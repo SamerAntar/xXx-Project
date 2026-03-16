@@ -9,11 +9,12 @@
     <RadzenStack AlignItems="AlignItems.Center" Gap="1.5rem">
         @if (CollectedPointsFromPlayer >= halfQuizPoints)
         {
+            <RadzenImage Path="/images/Satotz_correct.png"  />
             <RadzenIcon Icon="emoji_events" Style="font-size:64px;color:#4caf50;" />
+            <h2>Gut gemacht!</h2>
+            <h5>Du hast genug Punkte in dieser Prüfung gesammelt, um weiterzukommen.</h5>
 
-            <h2>Super! 😊 Du hast das nächste Quiz freigeschaltet!</h2>
-
-            <RadzenButton Text="Nächstes Quiz starten"
+            <RadzenButton Text="Nächste Prüfung starten"
                           Click="GoToNextQuiz"
                           Icon="arrow_forward"
                           ButtonStyle="ButtonStyle.Success"
@@ -21,12 +22,13 @@
         }
         else
         {
-            <RadzenIcon Icon="sentiment_dissatisfied" Style="font-size:64px;color:#f44336;" />
+            <RadzenImage Path="/images/Satotz_wrong.png" />
+            <RadzenIcon Icon="sentiment_neutral" Style="font-size:64px;color:#f44336;" />
 
-            <h2>Du hast noch nicht genug Punkte gesammelt. 😕</h2>
-            <h5>Beantworte die falschen Fragen erneut, um das nächste Quiz freizuschalten 😊</h5>
+            <h2>Du hast noch nicht genug Punkte gesammelt.</h2>
+            <h5>Bitte absolviere die Prüfung nochmal und versuche, deine falschen Antworten zu korrigieren.</h5>
 
-            <RadzenButton Text="Falsche Fragen wiederholen"
+            <RadzenButton Text="Falsch beantwortete Fragen wiederholen"
                           Click="@(() => OnRetryWrong.InvokeAsync())"
                           Icon="arrow_back"
                           ButtonStyle="ButtonStyle.Danger"
@@ -66,6 +68,7 @@
     [Parameter] public int QuestionSetId { get; set; }
     [Parameter] public int? SpielerId { get; set; }
     [Parameter] public int ThemaId { get; set; }
+    [Parameter] public int CharacterId { get; set; }
     [Parameter] public int? CollectedPointsFromPlayer { get; set; }
 
     [Parameter] public EventCallback OnRetryWrong { get; set; }
@@ -107,11 +110,11 @@
             int nextQuizId = quizStateService.RemainingQuizIds.First();
             quizStateService.RemainingQuizIds.Remove(nextQuizId);
 
-            Navi.NavigateTo($"/Quiz/ThemaID={ThemaId}/SpielerID={SpielerId}/QuizID={nextQuizId}");
+            Navi.NavigateTo($"/Quiz/ThemaID={ThemaId}/CharacterId={CharacterId}/SpielerID={SpielerId}/QuizID={nextQuizId}");
         }
         else
         {
-            Navi.NavigateTo($"/FinalResults/SpielerID={SpielerId}/QuestionSetID={QuestionSetId}");
+            Navi.NavigateTo($"/FinalResults/CharacterId={CharacterId}/SpielerID={SpielerId}/QuestionSetID={QuestionSetId}");
             //NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Kein weiteres Quiz", Duration = 3000 });
         }
     }

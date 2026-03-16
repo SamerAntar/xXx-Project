@@ -1,5 +1,5 @@
 ﻿@page "/Quiz"
-@page "/Quiz/ThemaID={ThemaId:int}/SpielerID={SpielerId:int}/QuizID={QuestionSetId:int}"
+@page "/Quiz/ThemaID={ThemaId:int}/CharacterID={CharacterId:int}/SpielerID={SpielerId:int}/QuizID={QuestionSetId:int}"
 @using Schulprojekt.Services
 @using Schulprojekt.Data
 @using System.Text.RegularExpressions
@@ -9,11 +9,11 @@
 
 @inject NotificationService NotificationService
 @inject IQuestionSetProgressService QestionSetProgressService
+@inject IWebHostEnvironment Env
 
 
 <PageTitle>@pageTitle</PageTitle>
 <h3>@pageTitle</h3>
-
 
 @if (QuestionsList.Count <= 0)
 {
@@ -24,12 +24,12 @@ else
     <RadzenDataList WrapItems="false" PageNumbersCount="10"
                     PageSize="1" ShowPagingSummary=true AllowPaging="true" @ref="dataList" Data="@QuestionsList" TItem="Question">
         <Template Context="x">
-            <RadzenStack Orientation="Orientation.Horizontal">
-                <RadzenCard Style="width:700px;">
+            <RadzenStack Orientation="Orientation.Horizontal" >
+                <RadzenCard class="question-card" Style=@($"--bg-image:url('{BackgroundImage}')")>
                     <!-- (Questions) -->
                     <RadzenStack>
                         <RadzenRow JustifyContent="JustifyContent.Center">
-                            @* <RadzenImage Path="@path" Style="width: 100px; height: 100px; border-radius: 50%;" /> *@
+                            <RadzenImage Path=@($"/images/Profil_Images/Profil_Image_{CharacterId}.png") Style="width: 100px; height: 100px; border-radius: 50%;" />
                         </RadzenRow>
                         <RadzenRow @key="x.Id">
                             <b>
@@ -103,6 +103,7 @@ else
                               QuestionSetId="QuestionSetId"
                               SpielerId="SpielerId"
                               ThemaId="ThemaId"
+                              CharacterId="CharacterId"
                               OnRetryWrong="ReloadWrongQuestions">
         </CompletedQuizMessage>
     }
@@ -117,6 +118,9 @@ else
     [Parameter] public int SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
     [Parameter] public int ThemaId { get; set; }
+    [Parameter] public int CharacterId { get; set; }
+
+    private string BackgroundImage; //set in OnParametersSetAsync
 
     RadzenDataList<Question>? dataList;
     List<Question> QuestionsList = new();
@@ -141,6 +145,20 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
+
+        //set image for the background, if exists, otherwise set default image
+        var imagePath = $"/images/Themen/Theme_Image_{ThemaId}.png";
+        var physicalPath = Path.Combine(Env.WebRootPath, "images", "Themen", $"Theme_Image_{ThemaId}.png");
+
+        if (File.Exists(physicalPath))
+        {
+            BackgroundImage = imagePath;
+        }
+        else
+        {
+            BackgroundImage = "/images/Themen/Theme_Image_0.png";
+        }
+
         quizDone = false;
         barValue = 0;
         answeredQuestions.Clear();
@@ -222,6 +240,7 @@ else
                 Topic = topic,
                 SpielerId = SpielerId,
                 ThemaId = ThemaId,
+                CharacterId = CharacterId,
                 QuestionSetId = QuestionSetId,
                 Points = collectedPointsFromPlayerPerQuiz,
                 MaxPoints = MaxPoints,
