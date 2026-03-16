@@ -13,6 +13,10 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+builder.Services.AddScoped<DialogService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<TooltipService>();
+builder.Services.AddScoped<ContextMenuService>();
 
 builder.Services.AddScoped<ISpielerService, SpielerService>();
 builder.Services.AddScoped<IQuestionSetService, QuestionSetService>();
