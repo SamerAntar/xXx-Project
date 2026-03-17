@@ -71,30 +71,40 @@ h1:focus {
     padding: 3rem;
 }
 
+    .question-card {
+        position: relative;
+        width: 700px;
+        overflow: hidden;
+        color: black;
+    }
 
-.questions_background {
-    position: relative;
-    overflow: hidden;
-     min-height: 100vh;
-}
+    /* Blur background */
+    .question-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: var(--bg-image);
+        background-size: cover;
+        background-position: center;
+        filter: blur(3px);
+        transform: scale(1.1);
+        z-index: 0;
+    }
 
-.questions_background::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: var(--bg-image);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    filter: blur(3px);
-    transform: scale(1.1);
-    z-index: 0;
-}
+    /* gray overlay for readability */
+    .question-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(255,255,255,0.6);
+        z-index: 1;
+    }
 
-.questions_background > * {
-    position: relative;
-    z-index: 1;
-}
+    /* Radzon content in front */
+    .question-card > * {
+        position: relative;
+        z-index: 2;
+    }
 
 
 
