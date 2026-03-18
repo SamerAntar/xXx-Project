@@ -21,6 +21,7 @@ builder.Services.AddScoped<ContextMenuService>();
 builder.Services.AddScoped<ISpielerService, SpielerService>();
 builder.Services.AddScoped<IQuestionSetService, QuestionSetService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<ICharacterService, CharacterService>();
 builder.Services.AddScoped<IThemaService, ThemaService>();
 builder.Services.AddScoped<ISpielerService, SpielerService>();
 builder.Services.AddScoped<IQuestionSetProgressService, QuestionSetProgressService>();
