@@ -161,11 +161,12 @@ else
 
         quizDone = false;
         barValue = 0;
-        answeredQuestions.Clear();
-        pointsPerQuestion.Clear();
-        previousSelectedMultipleAnswerIDs.Clear();
-        filledAnswersInGaps.Clear();
-        filledGapsInQuestionWithStates.Clear();
+        answeredQuestions = new();
+        pointsPerQuestion = new();
+        previousSelectedMultipleAnswerIDs = new();
+        filledAnswersInGaps = new();
+        filledGapsInQuestionWithStates = new();
+        wrongAnsweredQuestions = new();
 
         await determinQuizData();
 
@@ -227,14 +228,13 @@ else
         double MaxPoints = getMaxPointsForQuiz(questionSet);
         double halfPoints = MaxPoints / 2;
 
-        // Punkte Pro Quiz berechnen.
-        collectedPointsFromPlayerPerQuiz = playerPoints - QuizStateService.QuizPoints;
-        QuizStateService.QuizPoints = playerPoints;
+        collectedPointsFromPlayerPerQuiz = playerPoints - QuizStateService.FinalCollected;
 
         bool passed = collectedPointsFromPlayerPerQuiz >= halfPoints;
 
         if (passed)
         {
+
             var progress = new QuestionSetProgress
             {
                 Topic = topic,
@@ -248,6 +248,8 @@ else
             };
 
             await QestionSetProgressService.AddEntryAsync(progress);
+
+            QuizStateService.FinalCollected = playerPoints;
         }
 
         quizDone = true;
@@ -282,6 +284,7 @@ else
             previousSelectedMultipleAnswerIDs.Clear();//reset selected Answers; Muliple choice evalaluation should start all over again
             filledAnswersInGaps.Clear();
             filledGapsInQuestionWithStates.Clear();
+
             QuestionsList = wrongAnsweredQuestions.ToList();
 
             foreach (var question in QuestionsList)

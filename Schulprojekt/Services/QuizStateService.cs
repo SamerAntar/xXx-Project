@@ -6,11 +6,14 @@
         public bool IsInitialized { get; set; } = false;
         public int? QuizPoints { get; set; } = 0;
 
+        public int FinalCollected { get; set; } = 0;
+
         public void Reset()
         {
             RemainingQuizIds.Clear();
             IsInitialized = false;
             QuizPoints = 0;
+            FinalCollected = 0;
         }
     }
 }
