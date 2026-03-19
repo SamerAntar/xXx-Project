@@ -7,8 +7,17 @@ using Schulprojekt.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add SQL Server connection
-builder.Services.AddDbContextFactory<ApplicationDbContext>(
-    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddDbContextFactory<ApplicationDbContext>(
+//    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+    ));
+
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
