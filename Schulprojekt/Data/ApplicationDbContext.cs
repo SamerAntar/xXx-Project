@@ -14,6 +14,7 @@ namespace Schulprojekt.Data
         public DbSet<Thema> Themen { get; set; }
         public DbSet<QuestionSetProgress> QuestionSetProgresses { get; set; }
         public DbSet<Spieler> Players { get; set; }
+        public DbSet<Character> Character { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Question>()

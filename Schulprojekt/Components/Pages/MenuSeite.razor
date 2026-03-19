@@ -2,105 +2,153 @@
 @page "/MenuSeite/SpielerID={SpielerId:int}"
 @using Schulprojekt.Data
 @using Schulprojekt.Services
-@inject ISpielerService SpielerService
 @inject IQuestionSetService QuestionSetService
+@inject ICharacterService CharacterService
 @inject IThemaService ThemaService
 @inject NotificationService NotificationService
 @inject NavigationManager Navi
+@inject IWebHostEnvironment Env
 
 <PageTitle>Homepage</PageTitle>
 
-<div class="home-background" style="background-image: url('/images/HomeMain.png')">
+<div class="home-background" style="background-image: url('/images/MenuMain.png')">
     <div class="home-content">
-        <h2>Willkommen beim Hunter X Hunter Spiel</h2>
-        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Style="margin-top:30px;">
-            <div style="width:300px;">
-                <!-- #Row 1 DropdownList (Themen) -->
-                <RadzenStack>
-                    <RadzenDropDown Placeholder="--Bitte Thema auswählen--"
+        <h2>Willkommen beim IHKunter X IHKunter Spiel.</h2>
+        <RadzenRow Orientation="Orientation.Vertical">
+        <RadzenColumn Size="8">
+        <RadzenRow>
+            <!-- #1 Column: Characterselect -->
+            <RadzenColumn Size="6" Style="padding:20px 0px ;">
+                <RadzenCard  Style="height:100%; padding:15px; background-color:lightgray; padding:6px; opacity: 0.9;">
+                    <div style="text-align:center; margin:15px;">
+                        <RadzenText Text="Partnercharacter:" Style="font-weight:bold;" />
+                        <RadzenDropDown Placeholder="--Bitte Character auswählen--" Style="width=100%"
+                                    TValue="Character"
+                                    Data="@CharacterList"
+                                    TextProperty="Name"
+                                    @bind-Value="selectedCharacter"
+                                    Change="LoadCharacterProfile" />
+                    </div>
+                    @if (IsCharacterMissing())
+                    {
+                        <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                                     Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark">
+                            Ein Character muss gewählt werden!
+                        </RadzenAlert>
+                        <div style="text-align:center; margin:15px;">
+                            <RadzenIcon Icon="account_circle" Style="width: 100px; height: 100px; border-radius: 50%; background-color:black" />
+                        </div>
+                        <RadzenText Style="width:100%; margin-top:10px; height: 200px" />
+                    }
+                    else
+                    {
+                        <div style="text-align:center; margin:15px;">
+                            <RadzenImage Path=@CharacterProfileImagePath Style="width: 100px; height: 100px; border-radius: 50%;" />
+                        </div>
+                                <RadzenText Style="width:100%; margin-top:10px; height: 200px; padding: 10px; font-weight:bold;">
+                            @CharacterProfilBackstory
+                        </RadzenText>
+                    }
+                </RadzenCard>
+            </RadzenColumn>
+
+            <!-- #2 Column: Themeselect -->
+            <RadzenColumn Size="6" Style="padding:20px 0px ;">
+                <RadzenCard Style="height:100%; padding:15px; background-color:lightgray; padding:6px; opacity: 0.9;">
+                    <div style="text-align:center; margin:15px;">
+                        <RadzenText Text="Prüfungsort:" Style="font-weight:bold;" />
+                        <RadzenDropDown Placeholder="--Bitte Gebiet (Thema) auswählen--"
                                     TValue="Thema"
                                     Data="@ThemenList"
-                                    TextProperty="Name"
-                                    @bind-Value="selectedthema"
-                                    Change="LoadQuestionSet" />
+                                    TextProperty="GamePlaceName"
+                                    @bind-Value="selectedThema"
+                                    Change="LoadThemeInfo" />
+                    </div>
                     @if (IsThemeMissing())
                     {
                         <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
                                      Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark">
-                            Thema ist erforderlich!
+                            Ein Thema muss gewählt werden!
                         </RadzenAlert>
+                         <RadzenText Style="width:100%; margin-top:10px; padding: 10px; height: 200px">
+                         </RadzenText>
                     }
-                </RadzenStack>
-            </div>
-        </RadzenStack>
-        <RadzenStack Orientation="Orientation.Horizontal" Gap="20px" JustifyContent="JustifyContent.Center" Style="margin-top:20px;">
-
-            <div style="width:300px;">
-                <RadzenStack>
-                    <RadzenTextBox @bind-Value="playerName" Placeholder="Spielername eingeben" />
-                    @if (IsPlayerMissing())
+                    else
                     {
-                        <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
-                                     Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark">
-                            Spieler ist erforderlich!
-                        </RadzenAlert>
+                        <div style="text-align:center; margin:15px;">
+                                    <RadzenImage Path=@ThemeInfoImage Style="width: 200px; height: 200px; border-radius: 4px; border:4px solid black;" />
+                        </div>
+                                <RadzenText Style="width:100%; margin-top:10px; padding: 10px; height: 200px; font-weight:bold;">
+                              @ThemeInfoDescription
+                        </RadzenText>
+                            
                     }
-                </RadzenStack>
-            </div>
-
-            <div style="width:300px;">
-                <RadzenStack>
-                    <RadzenDropDown Placeholder="--Bitte Quiz auswählen--"
-                                    AllowClear="true"
-                                    TValue="QuestionSet"
-                                    Data="@QuestionSetsList"
-                                    TextProperty="Title"
-                                    @bind-Value="selectedQuestionSet" />
-
-                    @if (IsQuestionSetMissing())
-                    {
-                        <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
-                                     Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark">
-                            Quiz ist erforderlich!
-                        </RadzenAlert>
-                    }
-                </RadzenStack>
-            </div>
-        </RadzenStack>
-        <div style="display:flex; justify-content:center; margin-top:40px;">
-            <RadzenButton Variant="Variant.Flat" Click="StartGame" Text="Quiz starten" ButtonStyle="ButtonStyle.Success" />
-        </div>
-    </div>
-    <RadzenImage Path="/images/Hisokaaa.png"
-                 Style="position:absolute;
-                        bottom:20px;
-                        right:20px;
-                        width:350px;
-                        height:auto;" />
-
-</div>
-
-
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow Orientation="Orientation.Vertical">
+            <RadzenCard Style="width:100%; height: 150px; padding:20px; background-color:lightgray; opacity: 0.9;">
+                        <RadzenText Text="Prüfung:" Style="font-weight:bold;" />
+                        <RadzenRow Style="max-width:100%">
+                            <RadzenDropDown Placeholder="--Bitte Prüfung auswählen--"
+                                        AllowClear="true"
+                                        TValue="QuestionSet"
+                                        Data="@QuestionSetsList"
+                                        TextProperty="Title"
+                                        @bind-Value="selectedQuestionSet" />
+                            <RadzenButton Variant="Variant.Flat" Click="StartGame" Text="Prüfung starten" ButtonStyle="ButtonStyle.Success" />
+                            @if (IsQuestionSetMissing())
+                            {
+                                <RadzenAlert AlertStyle="AlertStyle.Warning" AllowClose="false"
+                                    Size="AlertSize.ExtraSmall" Variant="Variant.Flat" Shade="Shade.Dark">
+                                     Eine Prüfung muss gewählt werden!
+                                </RadzenAlert>
+                            }
+                        </RadzenRow>
+           </RadzenCard>
+        </RadzenRow>
+        </RadzenColumn>
+            <RadzenColumn Size="3">
+                <RadzenCard Style="height:100%; padding:15px; background-color:lightgray; padding:6px; opacity: 0.9;">
+                    <RadzenImage Path="/images/Satotz_menu.png" Style="width: 100%; border:4px solid black;" />
+                    <RadzenText Style="font-weight:bold; width:100%; padding: 10px;">
+                        Willkommen bei der IHKunter Prüfung, Teilnehmer. Ich bin Satotz, ihr Prüfer. <br />
+                        Bitte wählen sie vor Beginn ihren Partner und das Prüfungssgebiet aus.<br />
+                        Danach stelle ich ihnen eine Auswahl an Prüfungen vor, die sie ablegen können.<br />
+                        Sie können von einer beliebigen Prüfung starten, müssen jedoch bei jeder Prüfungen mindestens 50% der Punkte erreichen.<br />
+                        Nur dann erhalten sie eine Gesamtbewertung und ihre IHKunter Lizenz, basierend an ihrer erbrachten Leistung.<br />
+                        Viel Erfolg!
+                    </RadzenText>
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+     </div>
+ </div>
+        
 @code {
     [Parameter] public int SpielerId { get; set; }
-    List<Spieler> SpielerList = new();
     List<QuestionSet> QuestionSetsList = new();
+    List<Character> CharacterList = new();
     List<Thema> ThemenList = new();
     QuestionSet? selectedQuestionSet;
-    Thema selectedthema;
-
-    string playerName = "";
+    Character selectedCharacter;
+    Thema selectedThema;
+    string CharacterProfileImagePath = $"/images/Profil_Images/Profil_Image_0.png";
+    string CharacterProfilBackstory = "Dieser Character ist so mysteriös, dass er keine Backstory hat!";
+    string ThemeInfoImage = "";
+    string ThemeInfoDescription = "";
 
     protected override async Task OnInitializedAsync()
     {
-        ThemenList = (await ThemaService.GetAllEntriesIncludingNavigationsAsync()).ToList();
+        CharacterList = (await CharacterService.GetAllEntriesAsync()).ToList();
+        ThemenList = (await ThemaService.GetAllEntriesIncludingNavigationsAsync()).Where(x => x.Id != 0).ToList();
     }
 
     /// <summary>
-    /// Player Validation.
+    /// Character Validation.
     /// </summary>
     /// <returns></returns>
-    private bool IsPlayerMissing() => string.IsNullOrWhiteSpace(playerName);
+    private bool IsCharacterMissing() => string.IsNullOrEmpty(selectedCharacter?.Name);
 
     /// <summary>
     /// QuestionSet Validation.
@@ -112,39 +160,80 @@
     /// QuestionSet Validation.
     /// </summary>
     /// <returns></returns>
-    private bool IsThemeMissing() => string.IsNullOrEmpty(selectedthema?.Name);
+    private bool IsThemeMissing() => string.IsNullOrEmpty(selectedThema?.Name);
 
     /// <summary>
     /// Navigate to the
     /// </summary>
     async Task StartGame()
     {
-        if (string.IsNullOrWhiteSpace(playerName) || selectedQuestionSet is null)
+        if (selectedCharacter is null || selectedThema is null || selectedQuestionSet is null)
         {
             NotificationService.Notify(new NotificationMessage
             {
                 Severity = NotificationSeverity.Info,
-                Summary = "Fehlende Eingaben",
-                Detail = "Bitte Thema, Spieler und Quiz auswählen"
+                Summary = "Quiz kann noch nicht gestartet werden",
+                Detail = "Bitte Character, Themengebiet und Prüfung auswählen"
             });
 
             return;
         }
 
-        var spieler = new Spieler { Name = playerName };
-        var savedPlayer = await SpielerService.AddOrUpdateAsync(spieler);
+        Navi.NavigateTo($"/Quiz/ThemaID={selectedThema.Id}/CharacterId={selectedCharacter.CharacterID}/SpielerID={SpielerId}/QuizID={selectedQuestionSet.Id}");
+    }
 
-        if (savedPlayer is not null)
+    /// <summary>
+    ///  Load Character Data after selecting a Character.
+    /// </summary>
+    /// <returns></returns>
+    /// <author>Maxim</author>
+    async Task LoadCharacterProfile()
+    {
+        var physicalPath = Path.Combine(Env.WebRootPath, "images", "Profil_Images", $"Profil_Image_{selectedCharacter.CharacterID}.png");
+        if (File.Exists(physicalPath))
         {
-            Navi.NavigateTo($"/Quiz/ThemaID={selectedthema.Id}/CharacterId=1/SpielerID={savedPlayer.Id}/QuizID={selectedQuestionSet.Id}");
+            CharacterProfileImagePath = $"/images/Profil_Images/Profil_Image_{selectedCharacter.CharacterID}.png";
+            CharacterProfilBackstory = $"{selectedCharacter.Backstory}";
         }
+        else
+        {
+            CharacterProfileImagePath = $"/images/Profil_Images/Profil_Image_0.png";
+            CharacterProfilBackstory = "Dieser Character ist so mysteriös, dass nur der beste Detektiv seine Identität kennt!";
+        }
+    }
+
+    /// <summary>
+    ///  Load Theme Data after selecting a Theme.
+    /// </summary>
+    /// <returns></returns>
+    /// <author>Maxim</author>
+    async Task LoadThemeInfo()
+    {
+        //set image for the background, if exists, otherwise set default image
+        var imagePath = $"/images/Themen/Theme_Image_{selectedThema.Id}.png";
+        var physicalPath = Path.Combine(Env.WebRootPath, "images", "Themen", $"Theme_Image_{selectedThema.Id}.png");
+
+        if (File.Exists(physicalPath))
+        {
+            ThemeInfoImage = imagePath;
+            ThemeInfoDescription = $"{selectedThema.GamePlaceDescription} \n\n(Thema: {selectedThema.Name})";
+        }
+        else
+        {
+            ThemeInfoImage = "/images/Themen/Theme_Image_0.png";
+            ThemeInfoDescription = "Die Herausforderungen dieses Gebietes sind selbst für die IHKunter Organisation unbekannt";
+        }
+        await LoadQuestionSet();
     }
 
     async Task LoadQuestionSet()
     {
-        if (selectedthema is not null)
+        selectedQuestionSet = null; //reset selected question set, so the user has to select a new one after changing the theme
+        if (selectedThema is not null)
         {
-            QuestionSetsList = (await QuestionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(selectedthema.Id)).ToList();
+            QuestionSetsList = (await QuestionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(selectedThema.Id)).ToList();
+            if (QuestionSetsList.Count == 0)
+                QuestionSetsList.Clear();
         }
         else
         {
