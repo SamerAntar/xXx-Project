@@ -1,5 +1,5 @@
 ﻿@page "/FinalResults"
-@page "/FinalResults/SpielerID={SpielerId:int}/QuestionSetID={QuestionSetId:int}"
+@page "/FinalResults/CharacterId={CharacterId:int}/SpielerID={SpielerId:int}/QuestionSetID={QuestionSetId:int}"
 @inject IQuestionSetService questionSetService
 @inject IQuestionSetProgressService QuestionSetProgressService
 @using Schulprojekt.Data
@@ -107,6 +107,7 @@
 
     [Parameter] public int SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
+    [Parameter] public int CharacterId { get; set; }
 
 
     List<QuestionSet> QuestionSetList = new();

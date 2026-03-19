@@ -228,6 +228,7 @@ else
         double MaxPoints = getMaxPointsForQuiz(questionSet);
         double halfPoints = MaxPoints / 2;
 
+
         collectedPointsFromPlayerPerQuiz = playerPoints - QuizStateService.FinalCollected;
 
         bool passed = collectedPointsFromPlayerPerQuiz >= halfPoints;
