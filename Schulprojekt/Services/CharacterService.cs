@@ -38,5 +38,19 @@ namespace Schulprojekt.Services
                 throw;
             }
         }
+
+        public virtual async Task<Character?> GetEntryByKeyAsync(int key)
+        {
+            try
+            {
+                using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+                return await dbContext.Character.FirstOrDefaultAsync(q => q.CharacterID == key);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 }
