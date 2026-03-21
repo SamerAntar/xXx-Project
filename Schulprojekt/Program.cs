@@ -7,8 +7,17 @@ using Schulprojekt.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add SQL Server connection
-builder.Services.AddDbContextFactory<ApplicationDbContext>(
-    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddDbContextFactory<ApplicationDbContext>(
+//    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+    ));
+
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -47,5 +56,30 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
+
+//Run direkt auf Localhost
+if (!app.Environment.IsDevelopment())
+{
+    var url = "http://localhost:5000";
+
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        catch { }
+    });
+}
 
 app.Run();
