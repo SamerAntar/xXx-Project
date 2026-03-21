@@ -2,13 +2,18 @@
 @page "/FinalResults/CharacterId={CharacterId:int}/SpielerID={SpielerId:int}/QuestionSetID={QuestionSetId:int}"
 @inject IQuestionSetService questionSetService
 @inject IQuestionSetProgressService QuestionSetProgressService
+@inject ICharacterService CharacterService
 @using Schulprojekt.Data
 @using Schulprojekt.Services
 @inject NavigationManager Navi
+@inject DialogService DialogService
+@inject IWebHostEnvironment Env
 
 <PageTitle>Final Results</PageTitle>
 
-<RadzenRow JustifyContent="JustifyContent.Center" class="rz-mt-6">
+<div class="home-background" style="background-image: url('/images/EndMain.png'); background-position:right">
+    <div class="home-content">
+<RadzenRow JustifyContent="JustifyContent.Center" class="rz-my-6">
     <RadzenColumn Size="8">
         <!-- HERO CARD -->
         <RadzenCard class="hero-card rz-shadow-6 rz-p-6">
@@ -28,13 +33,20 @@
                         @($"{percent:0.00}%")
                     </Template>
                 </RadzenProgressBar>
-                <RadzenIcon Icon="@MedalIcon"
-                            Style="@($"font-size:70px; color:{MedalColor};")" />
-
+                <RadzenImage Path=@IHKunterLicenceImagePath Style="height: 300px; border-radius: 4px;" />
                 <RadzenText Style="font-size:18px;">
                     @MotivationText
                 </RadzenText>
             </RadzenStack>
+        </RadzenCard>
+        <!-- CHART -->
+        <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4 question-card" Style=@($"--bg-image:url('{EndscreenImage}'); width:100%;")>
+             <div style="text-align:center; margin:15px;">
+                <RadzenText Text=@($"Endszenario ({EndTextKind}):") Style="font-weight:bold; font-size: 35px" />
+            </div>
+            <RadzenText Style="width:100%; height: 400px; margin-top:10px; padding: 10px 50px; font-weight:bold; font-size: 25px">
+                @EndscreenText
+            </RadzenText>
         </RadzenCard>
         <!-- CHART -->
         <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4">
@@ -85,10 +97,13 @@
                      JustifyContent="JustifyContent.Center"
                      Gap="1rem"
                      class="rz-mt-4">
-            <RadzenButton Click=@GoHome Icon="home" Text="Zurück zur Startseite" Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Info" />
+            <RadzenButton Click=@GoMenu Icon="home" Text="Zurück zum Spielmenü" Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Info" />
+            <RadzenButton Click=@GoHome Icon="logout" Text="Ausloggen" Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Danger" />
         </RadzenStack>
     </RadzenColumn>
 </RadzenRow>
+</div>
+</div>
 
 <style>
     .hero-card {
@@ -109,54 +124,110 @@
     [Parameter] public int QuestionSetId { get; set; }
     [Parameter] public int CharacterId { get; set; }
 
+    private string EndscreenImage = "images/Endscreen_Normal/Endscreen_0_normal.png";
+    private string EndscreenText = "Du hast es geschafft, wir sind stolz auf dich!";
 
     List<QuestionSet> QuestionSetList = new();
     List<QuestionSetProgress> QuestionSetProgressList = new();
+    Character? EndCharacter;
+    Spieler? spieler;
+
 
     double? totalPoints = 0;
     double? totalMax = 0;
     double percent = 0;
 
-    string MedalIcon => percent switch
-    {
-        >= 90 => "emoji_events",
-        >= 75 => "military_tech",
-        >= 60 => "workspace_premium",
-        _ => "sentiment_dissatisfied"
-    };
-
-    string MedalColor => percent switch
-    {
-        >= 90 => "#FFD700", // Gold
-        >= 75 => "#C0C0C0", // Silver
-        >= 60 => "#cd7f32", // Bronze
-        _ => "#f44336"
-    };
-
     string MotivationText => percent switch
     {
-        >= 90 => "Hervorragende Leistung! Du beherrschst alle Themen!",
-        >= 75 => "Super! Du hast ein sehr gutes Wissen.",
-        >= 60 => "Gute Arbeit! Etwas mehr Übung macht es perfekt.",
-        _ => "Übe weiter und versuche es noch einmal!"
+        >= 90 => $"Hervorragende Leistung, {spieler?.Name ?? "Spieler"}! Sie haben ihre Top-IHKunter-Lizenz mehr als verdient.",
+        >= 75 => $"Gute Arbeit, {spieler?.Name ?? "Spieler"}! Damit haben Sie sogar ihre Profi-IHKunter-Lizenz erworben. ",
+        >= 50 => $"Glückwunsch zu ihrer normalen IHKunter-Lizenz, {spieler?.Name ?? "Spieler"}.",
+        _ => $"Glückwunsch zu ihrer normalen IHKunter-Lizenz, ABER übe weiter, {spieler?.Name ?? "Spieler"}!"
+    };
+
+    string IHKunterLicenceImagePath => percent switch
+    {
+        >= 90 => "images/Top_IHKunter_Lizenz.png",
+        >= 75 => "images/Profi_IHKunter_Lizenz.png",
+        >= 50 => "images/Normale_IHKunter_Lizenz.png",
+        _ => "images/Normale_IHKunter_Lizenz.png"
+    };
+
+    string EndTextKind => percent switch
+    {
+        >= 90 => "Top",
+        >= 75 => "Profi",
+        >= 50 => "Normal",
+        _ => "Normal"
     };
 
     protected override async Task OnInitializedAsync()
     {
-
-        //Todo: Topic distinct anzeigen.
-
         QuestionSetProgressList = (await QuestionSetProgressService.GetEntriesByPlayerId(SpielerId)).ToList();
 
         QuestionSetList = (await questionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(QuestionSetId)).ToList();
 
+        EndCharacter = await CharacterService.GetEntryByKeyAsync(CharacterId);
+
         totalPoints = QuestionSetProgressList.Sum(x => x.Points);
         totalMax = QuestionSetProgressList.Sum(x => x.MaxPoints);
         percent = totalMax == 0 ? 0 : (totalPoints ?? 0) / (totalMax ?? 1) * 100;
+
+        LoadEndScreen();
     }
 
-    void GoHome()
+    async void GoHome()
     {
-        Navi.NavigateTo("/");
+        var confirmation = await DialogService.Confirm(
+          ($"Sie werden  als Spieler {spieler?.Name ?? "ohne Namen"} ausgeloggt und zurück zur Startseite umgeleitet. SInd sie sicher?"),
+          "Bestätigungsnachfrage", new ConfirmOptions { OkButtonText = ("Ja"), CancelButtonText = ("Nein") }) ?? false;
+        if (confirmation)
+        {
+            Navi.NavigateTo("/");
+        }
+    }
+
+    async void GoMenu()
+    {
+        var confirmation = await DialogService.Confirm(
+                  ($"Sie werden zurück zum Spielmenü umgeleitet. Sie bleiben weiterhin als Spieler {spieler?.Name ?? "ohne Namen"} angemeldet"),
+                  "Bestätigungsnachfrage", new ConfirmOptions { OkButtonText = ("Ja"), CancelButtonText = ("Nein") }) ?? false;
+        if(confirmation) {
+            Navi.NavigateTo($"/MenuSeite/SpielerID={SpielerId}");
+        }
+    }
+
+    /// <summary>
+    ///  Loading end screen image and text based on the player's performance.
+    /// </summary>
+    /// <author>Maxim, Samer</author>
+    void LoadEndScreen()
+    {
+        //set image for the background, if exists, otherwise set default image
+        var imagePath = $"images/Endscreen_{EndTextKind}/Endscreen_{CharacterId}_{EndTextKind.ToLower()}.png";
+        var physicalPath = Path.Combine(Env.WebRootPath, "images", $"Endscreen_{EndTextKind}", $"Endscreen_{CharacterId}_{EndTextKind.ToLower()}.png");
+
+        if (File.Exists(physicalPath) && EndCharacter != null)
+        {
+            EndscreenImage = imagePath;
+            //Get Endtext depending on Points
+            switch (percent)
+            {
+                case >= 90:
+                    EndscreenText = $"{EndCharacter.TopEndText}";
+                    break;
+                case >= 75:
+                    EndscreenText = $"{EndCharacter.ProfiEndText}";
+                    break;
+                default:
+                    EndscreenText = $"{EndCharacter.NormalEndText}";
+                    break;
+            }
+        }
+        else
+        {
+            EndscreenImage = "images/Endscreen_Normal/Endscreen_0_normal.png";
+            EndscreenText = "Du hast es geschafft, wir sind stolz auf dich!";
+        }
     }
 }
