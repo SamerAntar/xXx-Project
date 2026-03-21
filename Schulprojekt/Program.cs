@@ -63,6 +63,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+//Run direkt auf Localhost
 if (!app.Environment.IsDevelopment())
 {
     var url = "http://localhost:5000";
