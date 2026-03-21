@@ -6,11 +6,14 @@
 @using Schulprojekt.Data
 @using Schulprojekt.Services
 @inject NavigationManager Navi
+@inject DialogService DialogService
 @inject IWebHostEnvironment Env
 
 <PageTitle>Final Results</PageTitle>
 
-<RadzenRow JustifyContent="JustifyContent.Center" class="rz-mt-6">
+<div class="home-background" style="background-image: url('/images/EndMain.png'); background-position:right">
+    <div class="home-content">
+<RadzenRow JustifyContent="JustifyContent.Center" class="rz-my-6">
     <RadzenColumn Size="8">
         <!-- HERO CARD -->
         <RadzenCard class="hero-card rz-shadow-6 rz-p-6">
@@ -39,7 +42,7 @@
         <!-- CHART -->
         <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4 question-card" Style=@($"--bg-image:url('{EndscreenImage}'); width:100%;")>
              <div style="text-align:center; margin:15px;">
-                <RadzenText Text=@($"{EndTextKind} Endszenario:") Style="font-weight:bold; font-size: 35px" />
+                <RadzenText Text=@($"Endszenario ({EndTextKind}):") Style="font-weight:bold; font-size: 35px" />
             </div>
             <RadzenText Style="width:100%; height: 400px; margin-top:10px; padding: 10px 50px; font-weight:bold; font-size: 25px">
                 @EndscreenText
@@ -94,10 +97,13 @@
                      JustifyContent="JustifyContent.Center"
                      Gap="1rem"
                      class="rz-mt-4">
-            <RadzenButton Click=@GoHome Icon="home" Text="Zurück zur Startseite" Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Info" />
+            <RadzenButton Click=@GoMenu Icon="home" Text="Zurück zum Spielmenü" Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Info" />
+            <RadzenButton Click=@GoHome Icon="logout" Text="Ausloggen" Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Danger" />
         </RadzenStack>
     </RadzenColumn>
 </RadzenRow>
+</div>
+</div>
 
 <style>
     .hero-card {
@@ -124,6 +130,8 @@
     List<QuestionSet> QuestionSetList = new();
     List<QuestionSetProgress> QuestionSetProgressList = new();
     Character? EndCharacter;
+    Spieler? spieler;
+
 
     double? totalPoints = 0;
     double? totalMax = 0;
@@ -131,10 +139,10 @@
 
     string MotivationText => percent switch
     {
-        >= 90 => "Hervorragende Leistung! Sie haben ihre Top-IHKunter-Lizenz mehr als verdient.",
-        >= 75 => "Gute Arbeit! Damit haben Sie sogar ihre Profi-IHKunter-Lizenz erworben. ",
-        >= 50 => "Glückwunsch zu ihrer normalen IHKunter-Lizenz.",
-        _ => "Glückwunsch zu ihrer normalen IHKunter-Lizenz. Übe weiter!"
+        >= 90 => $"Hervorragende Leistung, {spieler?.Name ?? "Spieler"}! Sie haben ihre Top-IHKunter-Lizenz mehr als verdient.",
+        >= 75 => $"Gute Arbeit, {spieler?.Name ?? "Spieler"}! Damit haben Sie sogar ihre Profi-IHKunter-Lizenz erworben. ",
+        >= 50 => $"Glückwunsch zu ihrer normalen IHKunter-Lizenz, {spieler?.Name ?? "Spieler"}.",
+        _ => $"Glückwunsch zu ihrer normalen IHKunter-Lizenz, ABER übe weiter, {spieler?.Name ?? "Spieler"}!"
     };
 
     string IHKunterLicenceImagePath => percent switch
@@ -161,16 +169,32 @@
 
         EndCharacter = await CharacterService.GetEntryByKeyAsync(CharacterId);
 
-        totalPoints = 99; //totalPoints = QuestionSetProgressList.Sum(x => x.Points);
-        totalMax= 100; //totalMax = QuestionSetProgressList.Sum(x => x.MaxPoints);
+        totalPoints = QuestionSetProgressList.Sum(x => x.Points);
+        totalMax = QuestionSetProgressList.Sum(x => x.MaxPoints);
         percent = totalMax == 0 ? 0 : (totalPoints ?? 0) / (totalMax ?? 1) * 100;
 
         LoadEndScreen();
     }
 
-    void GoHome()
+    async void GoHome()
     {
-        Navi.NavigateTo("/");
+        var confirmation = await DialogService.Confirm(
+          ($"Sie werden  als Spieler {spieler?.Name ?? "ohne Namen"} ausgeloggt und zurück zur Startseite umgeleitet. SInd sie sicher?"),
+          "Bestätigungsnachfrage", new ConfirmOptions { OkButtonText = ("Ja"), CancelButtonText = ("Nein") }) ?? false;
+        if (confirmation)
+        {
+            Navi.NavigateTo("/");
+        }
+    }
+
+    async void GoMenu()
+    {
+        var confirmation = await DialogService.Confirm(
+                  ($"Sie werden zurück zum Spielmenü umgeleitet. Sie bleiben weiterhin als Spieler {spieler?.Name ?? "ohne Namen"} angemeldet"),
+                  "Bestätigungsnachfrage", new ConfirmOptions { OkButtonText = ("Ja"), CancelButtonText = ("Nein") }) ?? false;
+        if(confirmation) {
+            Navi.NavigateTo($"/MenuSeite/SpielerID={SpielerId}");
+        }
     }
 
     /// <summary>
