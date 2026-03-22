@@ -47,4 +47,34 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+// Incase we have Seeder then can here the Migration run and Update Database.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
+
+/// <author>Samer</author>
+/// <summary>
+/// Automatically opens the application in the default browser at http://localhost:5000
+/// when the application starts, but only if not in the Development environment.
+/// </summary>
+if (!app.Environment.IsDevelopment())
+{
+    var url = "http://localhost:5000";
+
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        catch { }
+    });
+}
+
 app.Run();
