@@ -55,7 +55,7 @@ else
                     <hr />
                     <!-- (Answers) -->
                     <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.Start" Gap="0.5rem" class="rz-p-sm-12">
-                        @if (x.QuestionType == QuestionType.TF && !x.AllowsMultiple)
+                        @if (x.QuestionType != QuestionType.GAP && !x.AllowsMultiple)
                         {
                             <!-- (Single Choice Answers) -->
                             <RadzenRadioButtonList @bind-Value=@x.selectedAnswer TValue="McAnswer" Change="@(value => SinglechoiceEvaluating(value, x))" Orientation="Orientation.Vertical">
@@ -67,7 +67,7 @@ else
                                 </Items>
                             </RadzenRadioButtonList>
                         }
-                        else if (x.QuestionType == QuestionType.MC && x.AllowsMultiple)
+                        else if (x.QuestionType != QuestionType.GAP && x.AllowsMultiple)
                         {
                                 <!-- (Multiple Choice Answers) -->
                             <RadzenCheckBoxList Value=@x.selectMultiAnswers TValue="McAnswer" Change="@((IEnumerable<McAnswer> value) => OnChangeMultipleChoice(x, value))" Orientation="Orientation.Vertical">
@@ -79,7 +79,7 @@ else
                                 </Items>
                             </RadzenCheckBoxList>
                         }
-                        else if (x.QuestionType == QuestionType.GAP && x.AllowsMultiple)
+                        else if (x.QuestionType == QuestionType.GAP)
                         {
                             <!-- (GapText Answers) -->
                             <!-- Gaps are loaded previously in the question, see method ReplaceGapsWithTextfields(Question question)-->
@@ -204,11 +204,12 @@ else
         pageTitle = questionSet.Title;
         await loadData(QuestionSetId);
 
-        quizFoto = "/images/" + $"{QuestionSetId}.png";
+        quizFoto = "/images/Question_Set/" + $"Set_{QuestionSetId}.png";
+        var physicalPath = Path.Combine(Env.WebRootPath, "images", "Question_Set", $"Set_{QuestionSetId}.png");
 
-        if (quizFoto is null || string.IsNullOrWhiteSpace(quizFoto))
+        if (quizFoto is null || string.IsNullOrWhiteSpace(quizFoto) || !File.Exists(physicalPath))
         {
-            quizFoto = "/images/demo.png";
+            quizFoto = "/images/MenuMain.png"; //default image
         }
     }
 
@@ -243,7 +244,7 @@ else
         foreach (var questionId in pointsPerQuestion)
         {
             if (questionId.Value < 0)
-                playerPoints += 0;
+                playerPoints += 0; //MC (and SC if first selected) can be negative -> make them to 0 (Points cant be taken) 
             else 
                 playerPoints += questionId.Value; //add Multiple Choice points to whole player points
         }
@@ -375,6 +376,10 @@ else
             if (!wrongAnsweredQuestions.Contains(question))
             {
                 wrongAnsweredQuestions.Add(question);
+                if (pointsPerQuestion.ContainsKey(question.Id))
+                {
+                    handleAddPoints(question.Id, value.Points * -1); //remove the gained points for that question, if player changes from correct to wrong answer
+                }
             }
         }
 
