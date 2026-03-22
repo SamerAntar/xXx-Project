@@ -7,8 +7,22 @@ using Schulprojekt.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add SQL Server connection
-builder.Services.AddDbContextFactory<ApplicationDbContext>(
-    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddDbContextFactory<ApplicationDbContext>(
+//    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+/// <author>Samer</author>
+/// <summary>
+/// Registers the ApplicationDbContext with a DbContextFactory using MySQL.
+/// The connection string "DefaultConnection" is retrieved from configuration,
+/// and the server version is automatically detected.
+/// </summary>
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+    ));
+
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -47,5 +61,34 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// Incase we have Seeder then can here the Migration run and Update Database.
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//    db.Database.Migrate();
+//}
+
+/// <author>Samer</author>
+/// <summary>
+/// Automatically opens the application in the default browser at http://localhost:5000
+/// when the application starts, but only if not in the Development environment.
+/// </summary>if (!app.Environment.IsDevelopment())
+{
+    var url = "http://localhost:5000";
+
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        catch { }
+    });
+}
 
 app.Run();

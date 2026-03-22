@@ -161,6 +161,13 @@
         _ => "Normal"
     };
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Initializes the component by loading the player's quiz progress, the relevant question sets,
+    /// and the end character. Calculates total points, maximum points, and completion percentage,
+    /// then prepares the end screen for display.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous initialization operation.</returns>
     protected override async Task OnInitializedAsync()
     {
         QuestionSetProgressList = (await QuestionSetProgressService.GetEntriesByPlayerId(SpielerId)).ToList();
@@ -176,6 +183,11 @@
         LoadEndScreen();
     }
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Prompts the user with a confirmation dialog before logging out the current player
+    /// and navigating back to the home page. If confirmed, the user is redirected to the start page.
+    /// </summary>
     async void GoHome()
     {
         var confirmation = await DialogService.Confirm(
@@ -187,6 +199,11 @@
         }
     }
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Prompts the user with a confirmation dialog before navigating back to the game menu.
+    /// If confirmed, the user is redirected while keeping the current player session active.
+    /// </summary>
     async void GoMenu()
     {
         var confirmation = await DialogService.Confirm(

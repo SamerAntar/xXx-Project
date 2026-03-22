@@ -79,6 +79,13 @@
 
     HashSet<int> questionSetsIds = new HashSet<int>();
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Initializes the component by loading all question sets if the quiz state has not yet been initialized.
+    /// Sets up the remaining quiz IDs, removes the current quiz from the remaining set,
+    /// and calculates the maximum points and half points for the current quiz.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous initialization operation.</returns>
     protected override async Task OnInitializedAsync()
     {
         if (!quizStateService.IsInitialized)
@@ -103,6 +110,11 @@
         halfQuizPoints = MaxPoints / 2;
     }
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Navigates to the next quiz in the remaining quiz set.
+    /// If there are no more quizzes left, navigates to the final results page.
+    /// </summary>
     private void GoToNextQuiz()
     {
         if (quizStateService.RemainingQuizIds.Any())
@@ -119,6 +131,13 @@
         }
     }
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Calculates the total maximum points achievable for a given quiz.
+    /// Sums the points of all correct multiple-choice answers and counts each gap field as one point.
+    /// </summary>
+    /// <param name="questionSet">The question set containing all quiz questions.</param>
+    /// <returns>The total maximum points for the quiz.</returns>
     private int getMaxPointsForQuiz(QuestionSet questionSet)
     {
         int points = 0;

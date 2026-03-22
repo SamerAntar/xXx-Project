@@ -143,6 +143,13 @@ else
     Dictionary<(int QuestionId, int GapIndex), bool> filledGapsInQuestionWithStates = new();
     Dictionary<(int QuestionId, int GapIndex), string> filledAnswersInGaps = new();
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Initializes and updates the component state based on the current URL parameters.
+    /// Sets the background image depending on the selected theme, resets quiz-related data,
+    /// loads quiz data, and prepares the first question for display.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     protected override async Task OnParametersSetAsync()
     {
 
@@ -183,6 +190,13 @@ else
         }
     }
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Loads and initializes quiz-related data based on the given QuestionSetId.
+    /// Retrieves the question set, sets the page title, loads the corresponding questions,
+    /// and assigns the quiz image with a fallback to a default image if necessary.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     async Task determinQuizData()
     {
         QuestionSet questionSet = await loadQuestionSet(QuestionSetId);
@@ -198,6 +212,12 @@ else
         }
     }
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Loads all questions for the specified question set, including related navigation data.
+    /// </summary>
+    /// <param name="questionSetId">The unique identifier of the question set.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     async Task loadData(int questionSetId)
     {
         QuestionsList = (await questionService.GetAllEntriesByQuestionSetIncludingNavigationsAsync(questionSetId)).ToList();
@@ -212,6 +232,12 @@ else
         return questionSet;
     }
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Finalizes the quiz by calculating the total player score, determining whether the quiz is passed,
+    /// and saving the progress if the required score is achieved. Updates the quiz state upon completion.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     async Task QuizAccomplisched()
     {
         foreach (var questionId in pointsPerQuestion)
@@ -256,6 +282,14 @@ else
         quizDone = true;
     }
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Calculates the maximum achievable score for a quiz based on its questions.
+    /// Includes points from correct multiple-choice answers and counts gap fields
+    /// as additional points.
+    /// </summary>
+    /// <param name="questionSet">The question set containing all quiz questions.</param>
+    /// <returns>The total maximum number of points that can be achieved.</returns>
     private int getMaxPointsForQuiz(QuestionSet questionSet)
     {
         int max = 0;
@@ -269,6 +303,13 @@ else
         return max;
     }
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Reloads only the incorrectly answered questions and resets the quiz state
+    /// for re-evaluation. Adjusts player points, clears previous answers and progress,
+    /// and restarts the quiz flow with the filtered set of wrong questions.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task ReloadWrongQuestions()
     {
         if (wrongAnsweredQuestions.Any())
@@ -306,13 +347,16 @@ else
             }
         }
     }
+
     #region SingleChoice
-    /// <summary>
-    /// Single Choice Evaluating
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="question"></param>
     /// <author>Samer</author>
+    /// <summary>
+    /// Evaluates a single-choice answer for a given question, updates the player's score,
+    /// and tracks whether the question was answered correctly or incorrectly.
+    /// Also updates progress indicators for answered questions.
+    /// </summary>
+    /// <param name="value">The selected answer.</param>
+    /// <param name="question">The question being evaluated.</param>
     void SinglechoiceEvaluating(McAnswer value, Question question)
     {
         if (value is null)
