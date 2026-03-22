@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.Services.AddDbContextFactory<ApplicationDbContext>(
 //    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
+// Add MYSQL Server connection
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -57,11 +57,12 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
-}
+// Incase we have Seeder then can here the Migration run and Update Database.
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//    db.Database.Migrate();
+//}
 
 //Run direkt auf Localhost
 if (!app.Environment.IsDevelopment())
