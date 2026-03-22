@@ -73,7 +73,8 @@ app.MapRazorComponents<App>()
 /// <summary>
 /// Automatically opens the application in the default browser at http://localhost:5000
 /// when the application starts, but only if not in the Development environment.
-/// </summary>if (!app.Environment.IsDevelopment())
+/// </summary>
+if (!app.Environment.IsDevelopment())
 {
     var url = "http://localhost:5000";
 
