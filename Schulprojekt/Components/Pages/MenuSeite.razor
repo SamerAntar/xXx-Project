@@ -138,32 +138,50 @@
     string ThemeInfoImage = "";
     string ThemeInfoDescription = "";
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Initializes the component by asynchronously loading the list of characters and themes.
+    /// Filters out any theme with an ID of 0.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     protected override async Task OnInitializedAsync()
     {
         CharacterList = (await CharacterService.GetAllEntriesAsync()).ToList();
         ThemenList = (await ThemaService.GetAllEntriesIncludingNavigationsAsync()).Where(x => x.Id != 0).ToList();
     }
 
+    /// <author>Samer</author>
     /// <summary>
-    /// Character Validation.
+    /// Checks whether a character is selected by validating the character's name.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>
+    /// True if no character is selected or the name is empty; otherwise, false.
+    /// </returns>
     private bool IsCharacterMissing() => string.IsNullOrEmpty(selectedCharacter?.Name);
 
+    /// <author>Samer</author>
     /// <summary>
-    /// QuestionSet Validation.
+    /// Checks whether a question set is selected by validating its title.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>
+    /// True if no question set is selected or the title is empty; otherwise, false.
+    /// </returns>
     private bool IsQuestionSetMissing() => string.IsNullOrEmpty(selectedQuestionSet?.Title);
 
+    /// <author>Samer</author>
     /// <summary>
-    /// QuestionSet Validation.
+    /// Checks whether a theme is selected by validating the theme name.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>
+    /// True if no theme is selected or the theme name is empty; otherwise, false.
+    /// </returns>
     private bool IsThemeMissing() => string.IsNullOrEmpty(selectedThema?.Name);
-
+   
+    /// <author>Samer</author>
     /// <summary>
-    /// Navigate to the
+    /// Starts the quiz by navigating to the quiz page if all required selections
+    /// (character, topic, and question set) are provided. Displays a notification
+    /// if any required selection is missing.
     /// </summary>
     void StartGame()
     {

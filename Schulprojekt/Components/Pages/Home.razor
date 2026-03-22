@@ -71,20 +71,32 @@
 
     string playerName = "";
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Performs component initialization by calling the base implementation.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous initialization operation.</returns>
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
     }
 
+    /// <author>Samer</author>
     /// <summary>
-    /// Player Validation.
+    /// Checks whether the player name has been provided.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>
+    /// True if the player name is null, empty, or consists only of whitespace; otherwise, false.
+    /// </returns>
     private bool IsPlayerMissing() => string.IsNullOrWhiteSpace(playerName);
 
+    /// <author>Samer</author>
     /// <summary>
-    /// Navigate to the
+    /// Starts the game by validating the player name input, checking if a player already exists,
+    /// and prompting the user with a confirmation dialog to either load existing progress or create a new player.
+    /// If confirmed, navigates to the main game menu for the selected or newly created player.
     /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     async Task StartGame()
     {
         if (string.IsNullOrWhiteSpace(playerName))
@@ -145,6 +157,15 @@
         }
     }
 
+    /// <author>Samer</author>
+    /// <summary>
+    /// Checks asynchronously whether a player with the specified name exists.
+    /// The comparison is case-insensitive.
+    /// </summary>
+    /// <param name="playerName">The name of the player to check.</param>
+    /// <returns>
+    /// True if a player with the given name exists; otherwise, false.
+    /// </returns>
     async Task<bool> IsPlayerExist(string playerName)
     {
         bool exist = false;

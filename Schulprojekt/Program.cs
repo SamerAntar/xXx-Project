@@ -10,7 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.Services.AddDbContextFactory<ApplicationDbContext>(
 //    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add MYSQL Server connection
+/// <author>Samer</author>
+/// <summary>
+/// Registers the ApplicationDbContext with a DbContextFactory using MySQL.
+/// The connection string "DefaultConnection" is retrieved from configuration,
+/// and the server version is automatically detected.
+/// </summary>
 builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -64,8 +69,11 @@ app.MapRazorComponents<App>()
 //    db.Database.Migrate();
 //}
 
-//Run direkt auf Localhost
-if (!app.Environment.IsDevelopment())
+/// <author>Samer</author>
+/// <summary>
+/// Automatically opens the application in the default browser at http://localhost:5000
+/// when the application starts, but only if not in the Development environment.
+/// </summary>if (!app.Environment.IsDevelopment())
 {
     var url = "http://localhost:5000";
 
