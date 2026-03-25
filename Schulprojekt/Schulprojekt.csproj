@@ -7,7 +7,15 @@
     <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
 
-  <ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<EnvironmentName>Production</EnvironmentName>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+		<EnvironmentName>Development</EnvironmentName>
+	</PropertyGroup>
+
+	<ItemGroup>
     <Compile Remove="LogicForUnittest\**" />
     <Content Remove="LogicForUnittest\**" />
     <EmbeddedResource Remove="LogicForUnittest\**" />
