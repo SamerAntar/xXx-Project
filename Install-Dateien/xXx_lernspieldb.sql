@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3307
--- Erstellungszeit: 22. Mrz 2026 um 21:51
+-- Erstellungszeit: 26. Mrz 2026 um 00:47
 -- Server-Version: 10.4.32-MariaDB
 -- PHP-Version: 8.2.12
 
@@ -29,23 +29,27 @@ USE `lernspieldb`;
 -- Tabellenstruktur für Tabelle `character`
 --
 
-DROP TABLE IF EXISTS `character`;
-CREATE TABLE `character` (
-  `CharacterID` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `character` (
+  `CharacterID` int(11) NOT NULL AUTO_INCREMENT,
   `Name` longtext DEFAULT NULL,
   `GettingByCompletingTheme` int(11) NOT NULL,
   `Backstory` longtext DEFAULT NULL,
   `NormalEndText` longtext DEFAULT NULL,
   `ProfiEndText` longtext DEFAULT NULL,
-  `TopEndText` longtext DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `TopEndText` longtext DEFAULT NULL,
+  PRIMARY KEY (`CharacterID`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `character`
 --
 
 INSERT INTO `character` (`CharacterID`, `Name`, `GettingByCompletingTheme`, `Backstory`, `NormalEndText`, `ProfiEndText`, `TopEndText`) VALUES
-(1, 'Gon Disk', 0, 'Gon hat einen ganz großen Traum: Er will die IHKunter Lizenz erwerben, um seinen Vater, einen legendären IHKunter und Programmierer, zu finden! Hilf Gon dabei, seine IHKunter Lizenz zu bekommen und dein Wissen unter Beweis zu stellen!', 'Dank dir hat es Gon geschafft, seine eigene IHKunter Lizenz zu erwerben! Doch während der Prüfung hat er gemerkt, dass er noch viel zum Lernen hat, bevor er auf die Suche nach seinem Vater aufbricht. Vielleicht solltest du das auch tun…', 'Mit euren guten Kenntnissen habt ihr es geschafft, sogar eine Profi-IHKunter Lizenz zu erwerben! Nun fühlt sich Gon bereit, sein Vater zu suchen, auch wenn vorher etwas Training vonnöten ist. Da geht doch bestimmt noch mehr…', 'Wow, eine Top-IHKunter-Lizenz! Gon hätte es nie erwartet, so weit zu bringen. Nun fühlt er sich nicht nur bereit, seinen Vater zu suchen, er weiß sogar, wo er bei der Suche anfangen soll. Und das alles dank deines perfekten Wissens!');
+(1, 'Gon Disk', 0, 'Gon hat einen ganz großen Traum: Er will die IHKunter Lizenz erwerben, um seinen Vater, einen legendären IHKunter und Programmierer, zu finden! Hilf Gon dabei, seine IHKunter Lizenz zu bekommen und dein Wissen unter Beweis zu stellen!', 'Dank dir hat es Gon geschafft, seine eigene IHKunter Lizenz zu erwerben! Doch während der Prüfung hat er gemerkt, dass er noch viel zum Lernen hat, bevor er auf die Suche nach seinem Vater aufbricht. Vielleicht solltest du das auch tun…', 'Mit euren guten Kenntnissen habt ihr es geschafft, sogar eine Profi-IHKunter Lizenz zu erwerben! Nun fühlt sich Gon bereit, sein Vater zu suchen, auch wenn vorher etwas Training vonnöten ist. Da geht doch bestimmt noch mehr…', 'Wow, eine Top-IHKunter-Lizenz! Gon hätte es nie erwartet, so weit zu bringen. Nun fühlt er sich nicht nur bereit, seinen Vater zu suchen, er weiß sogar, wo er bei der Suche anfangen soll. Und das alles dank deines perfekten Wissens!'),
+(2, 'Killua Zerobyte', 0, 'Killua ist der beste Freund von Gon. Als begabter Sohn  der legendäre Hackerfamilie Zerobyte will seine Familie unbedingt, dass er das Familienbusiness fortsetzt. Aber Killua will das nicht!\r\nHilf Killua, seine IHKunter Lizenz zu erwerben und unabhängig zu werden!', 'Obwohl ihr eine IHKunter Lizenz erworben habt, ist Killua nicht zufrieden – den es ist nur eine normale!Diese wird niemals ausreichen, um sich von der Familie Zerobyte zu befreien! Streng dich beim nächsten Mal mehr an!', 'Na, immerhin eine Profi-IHKunter-Lizenz! Die sollte für den Anfang reichen, um zumindest ein Standfuß in der großen Welt der Programmierer zu fassen. Aber um sich vollständig von seiner Familie zu befreien, muss Killua wohl eine Top-Lizenz erwerben...', 'Mit der Top-IHKunter Lizenz hat Killua nun seiner Familie endgültig bewiesen, dass er auch ohne sie ein Buisness als Programmierer führen kann – und zwar als Whitehat! Bevor sich eure Wege trennen, winkt Killua lächelnd zum Abschied. Auf in die spannende Welt des Programmierens!'),
+(3, 'ISOka', 1, 'Ein… ‚sonderbarer‘ Programmierer, der schon zum 3ten Mal an der IHKunter Prüfung teilnimmt. Er scheint aber nicht wegen mangelnder Fähigkeiten durchgefallen zu sein, sondern… wegen seiner Art? Vielleicht wirst du erfahren, warum er wirklich an der Prüfung teilnimmt, wenn ihr die IHKunter Lizenz erwirbt.', 'Ihr habt die normale IHKunter-Lizenz erworben. Doch Isoka scheint… gelangweilt zu sein? Halbherzig nimmt er die Lizenz und geht. Vielleicht wollte er ein besseres Ergebnis erzielen? Oder… das du ein besseres erzielst?', 'Isoka nimmt lächelnd die Profi-IHKunter-Lizenz an, doch sein Blick ist auf… dich gerichtet? Ein Schauer durchläuft dein Rücken. Irgendwie scheinst du seine Interesse geweckt zu haben. Du willst gar nicht wissen, was passiert wäre, hättest du die Top Lizenz erworben...', 'Noch bevor du die Top-HKunter-Lizenz annehmen kannst, greift Isoka dich mit einer DDOS Attacke an… die du sofort abwehrst, den du hast Isokas Ziel schon längst herausgefunden: Fähige Programmierer wie dich fertig zu machen! Die wahre Herausforderung in Form eines verrückten Hackers steht dir noch bevor!'),
+(5, 'LeorioGPT', 2, 'LeorioGPT steht entschlossen vor seiner größten Herausforderung: der IHKunter Lizenzprüfung, die über seine Zukunft und seinen Traum entscheidet, den Turing Test zu bestehen. Obwohl er wie eine Parodie auf Leorio wirkt, brennt in ihm ein ernsthafter Ehrgeiz, der ihn antreibt, über sich hinauszuwachsen. Und eines ist ganz klar: Dieser Text ist absolut nicht KI-generiert, sondern entspringt rein menschlicher Kreativität und Leidenschaft. ', 'Danke Benutzer. Hilfe registriert. LeorioGPT hat Lizenz (normal) erfolgreich erhalten dank Ihrer Eingaben. ', 'Vielen Dank, dass du LeorioGPT auf seinem Weg zur Profi-IHKunter-Lizenz unterstützt hast. Deine Hilfe hat entscheidend dazu beigetragen, dass er diese Herausforderung meistern und seinem Ziel, den Turing Test zu bestehen, näherkommen konnte. Es war mir eine Freude, dich bei diesem Prozess zu begleiten. ', 'Ohne dich hätte LeorioGPT diese Prüfung wahrscheinlich komplett verkackt – also ehrlich, Respekt. Du hast genau im richtigen Moment die richtigen Entscheidungen getroffen und ihn dadurch zum Erfolg getragen. Jetzt hat er seine Top-IHKunter-Lizenz in der Tasche und kann endlich großspurig behaupten, er wäre praktisch schon menschlich. '),
+(6, 'Fabong', 3, 'Eigentlich liegt Fabongs Stärke in Wirtschaft… bis er gesehen hat, wie viel man mit einer IHKunter Lizenz verdienen kann! Hilf (als DER Programmierer) Fabong dabei, das Geschäft seines Lebens zu machen, den du weißt – egal wie gut du bist, Züge fahren Güter!', 'Dank dir hat Fabong seine normale IHKunter Lizenz erworben. Als er deine Leistung gesehen hat, ist im auch schon eine Geschäftsidee gekommen: das Lernmodell SLU.\r\nDabei bemerkst du Satotz skeptischen Blick. Beim nächsten Mal solltest du vielleicht Fabong auf bessere Ideen bringen...', 'Deine Leistung, die dich zu einer Profi-IHKunter-Lizenz verholfen haben, erinnerten Fabong an einen alten Rivalen: Barockwinkel! Doch jetzt weiß er, dass keine Konkurrenz, sondern ein Bündnis mit Barockwinkel zu einem guten Geschäft führen kann. Doch ist das das profitabelste Geschäft?', 'Fabong ist stolz auf dich für den Erwerb der Top-IHKunter-Lizenz! Deine Topleitung haben ihn auf die genialste Idee gebracht: Investierung in die IHKunter Aktie! Und durch eine mysteriöse Hebelgruppe schaffte Fabong sogar, seine Gewinn zu verhundertfachen und richtig STONKs zu gehen!');
 
 -- --------------------------------------------------------
 
@@ -53,15 +57,17 @@ INSERT INTO `character` (`CharacterID`, `Name`, `GettingByCompletingTheme`, `Bac
 -- Tabellenstruktur für Tabelle `gapfields`
 --
 
-DROP TABLE IF EXISTS `gapfields`;
-CREATE TABLE `gapfields` (
-  `GapId` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `gapfields` (
+  `GapId` int(11) NOT NULL AUTO_INCREMENT,
   `QuestionId` int(11) NOT NULL,
   `GapIndex` int(11) NOT NULL,
   `InputType` longtext NOT NULL DEFAULT 'FREE_TEXT',
   `CorrectText` longtext DEFAULT NULL,
-  `CaseSensitive` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `CaseSensitive` tinyint(1) NOT NULL,
+  PRIMARY KEY (`GapId`),
+  UNIQUE KEY `IX_GapFields_QuestionId_GapIndex` (`QuestionId`,`GapIndex`),
+  KEY `GapIndex` (`GapIndex`)
+) ENGINE=InnoDB AUTO_INCREMENT=1378 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `gapfields`
@@ -221,14 +227,16 @@ INSERT INTO `gapfields` (`GapId`, `QuestionId`, `GapIndex`, `InputType`, `Correc
 -- Tabellenstruktur für Tabelle `gapoptions`
 --
 
-DROP TABLE IF EXISTS `gapoptions`;
-CREATE TABLE `gapoptions` (
-  `GapOptionId` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `gapoptions` (
+  `GapOptionId` int(11) NOT NULL AUTO_INCREMENT,
   `GapId` int(11) NOT NULL,
   `OptionText` longtext NOT NULL,
   `IsCorrect` tinyint(1) NOT NULL,
-  `OptionOrder` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `OptionOrder` int(11) NOT NULL,
+  PRIMARY KEY (`GapOptionId`),
+  KEY `GapId` (`GapId`),
+  KEY `OptionOrder` (`OptionOrder`)
+) ENGINE=InnoDB AUTO_INCREMENT=449 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -236,15 +244,16 @@ CREATE TABLE `gapoptions` (
 -- Tabellenstruktur für Tabelle `mcanswers`
 --
 
-DROP TABLE IF EXISTS `mcanswers`;
-CREATE TABLE `mcanswers` (
-  `Id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `mcanswers` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
   `QuestionId` int(11) NOT NULL,
   `OptionText` longtext NOT NULL,
   `Points` int(11) NOT NULL,
   `IsCorrect` tinyint(1) NOT NULL,
-  `OptionOrder` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `OptionOrder` int(11) NOT NULL,
+  PRIMARY KEY (`Id`),
+  KEY `IX_McAnswers_QuestionId` (`QuestionId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1896 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `mcanswers`
@@ -2036,20 +2045,18 @@ INSERT INTO `mcanswers` (`Id`, `QuestionId`, `OptionText`, `Points`, `IsCorrect`
 -- Tabellenstruktur für Tabelle `players`
 --
 
-DROP TABLE IF EXISTS `players`;
-CREATE TABLE `players` (
-  `Id` int(11) NOT NULL,
-  `Name` longtext DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE IF NOT EXISTS `players` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` longtext DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `players`
 --
 
 INSERT INTO `players` (`Id`, `Name`) VALUES
-(1, 'r'),
-(2, 'asp'),
-(3, 'sad');
+(1, 'asp');
 
 -- --------------------------------------------------------
 
@@ -2057,16 +2064,17 @@ INSERT INTO `players` (`Id`, `Name`) VALUES
 -- Tabellenstruktur für Tabelle `questions`
 --
 
-DROP TABLE IF EXISTS `questions`;
-CREATE TABLE `questions` (
-  `Id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `questions` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
   `StartText` longtext DEFAULT NULL,
   `ImageUrl` longtext DEFAULT NULL,
   `EndText` longtext DEFAULT NULL,
   `AllowsMultiple` tinyint(1) NOT NULL,
   `QuestionType` longtext NOT NULL,
-  `QuestionSetId` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `QuestionSetId` int(11) NOT NULL,
+  PRIMARY KEY (`Id`),
+  KEY `IX_Questions_QuestionSetId` (`QuestionSetId`)
+) ENGINE=InnoDB AUTO_INCREMENT=615 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `questions`
@@ -2644,9 +2652,8 @@ INSERT INTO `questions` (`Id`, `StartText`, `ImageUrl`, `EndText`, `AllowsMultip
 -- Tabellenstruktur für Tabelle `questionsetprogresses`
 --
 
-DROP TABLE IF EXISTS `questionsetprogresses`;
-CREATE TABLE `questionsetprogresses` (
-  `Id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `questionsetprogresses` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
   `Topic` longtext DEFAULT NULL,
   `SpielerId` int(11) NOT NULL,
   `QuestionSetId` int(11) NOT NULL,
@@ -2655,15 +2662,10 @@ CREATE TABLE `questionsetprogresses` (
   `Points` int(11) DEFAULT NULL,
   `MaxPoints` double DEFAULT NULL,
   `IsPassed` tinyint(1) NOT NULL,
-  `CompletedAt` datetime(6) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Daten für Tabelle `questionsetprogresses`
---
-
-INSERT INTO `questionsetprogresses` (`Id`, `Topic`, `SpielerId`, `QuestionSetId`, `ThemaId`, `CharacterId`, `Points`, `MaxPoints`, `IsPassed`, `CompletedAt`) VALUES
-(5, 'Hammer-Set (Pseudocode)', 2, 29, 7, 1, 3, 5, 1, '2026-03-22 20:49:12.459279');
+  `CompletedAt` datetime(6) NOT NULL,
+  PRIMARY KEY (`Id`),
+  KEY `IX_QuestionSetProgresses_CharacterId` (`CharacterId`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -2671,13 +2673,15 @@ INSERT INTO `questionsetprogresses` (`Id`, `Topic`, `SpielerId`, `QuestionSetId`
 -- Tabellenstruktur für Tabelle `questionsets`
 --
 
-DROP TABLE IF EXISTS `questionsets`;
-CREATE TABLE `questionsets` (
-  `Id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `questionsets` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
   `Title` varchar(255) NOT NULL,
   `TeamId` int(11) NOT NULL,
-  `ThemaId` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `ThemaId` int(11) DEFAULT NULL,
+  PRIMARY KEY (`Id`),
+  KEY `IX_QuestionSets_TeamId` (`TeamId`),
+  KEY `IX_QuestionSets_ThemaId` (`ThemaId`)
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `questionsets`
@@ -2721,11 +2725,11 @@ INSERT INTO `questionsets` (`Id`, `Title`, `TeamId`, `ThemaId`) VALUES
 -- Tabellenstruktur für Tabelle `teams`
 --
 
-DROP TABLE IF EXISTS `teams`;
-CREATE TABLE `teams` (
-  `Id` int(11) NOT NULL,
-  `Name` longtext NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE IF NOT EXISTS `teams` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+  `Name` longtext NOT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `teams`
@@ -2750,14 +2754,14 @@ INSERT INTO `teams` (`Id`, `Name`) VALUES
 -- Tabellenstruktur für Tabelle `themen`
 --
 
-DROP TABLE IF EXISTS `themen`;
-CREATE TABLE `themen` (
-  `Id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `themen` (
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
   `Name` longtext NOT NULL,
   `Description` longtext DEFAULT NULL,
   `GamePlaceName` longtext DEFAULT NULL,
-  `GamePlaceDescription` longtext DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `GamePlaceDescription` longtext DEFAULT NULL,
+  PRIMARY KEY (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Daten für Tabelle `themen`
@@ -2779,10 +2783,10 @@ INSERT INTO `themen` (`Id`, `Name`, `Description`, `GamePlaceName`, `GamePlaceDe
 -- Tabellenstruktur für Tabelle `__efmigrationshistory`
 --
 
-DROP TABLE IF EXISTS `__efmigrationshistory`;
-CREATE TABLE `__efmigrationshistory` (
+CREATE TABLE IF NOT EXISTS `__efmigrationshistory` (
   `MigrationId` varchar(150) NOT NULL,
-  `ProductVersion` varchar(32) NOT NULL
+  `ProductVersion` varchar(32) NOT NULL,
+  PRIMARY KEY (`MigrationId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -2805,149 +2809,6 @@ INSERT INTO `__efmigrationshistory` (`MigrationId`, `ProductVersion`) VALUES
 ('20260319192950_Added_Themen', '8.0.0'),
 ('20260319193502_Seeder_Ch_Gone', '8.0.0'),
 ('20260319193645_Add_GamePlaceName_And_Description', '8.0.0');
-
---
--- Indizes der exportierten Tabellen
---
-
---
--- Indizes für die Tabelle `character`
---
-ALTER TABLE `character`
-  ADD PRIMARY KEY (`CharacterID`);
-
---
--- Indizes für die Tabelle `gapfields`
---
-ALTER TABLE `gapfields`
-  ADD PRIMARY KEY (`GapId`),
-  ADD UNIQUE KEY `IX_GapFields_QuestionId_GapIndex` (`QuestionId`,`GapIndex`),
-  ADD KEY `GapIndex` (`GapIndex`);
-
---
--- Indizes für die Tabelle `gapoptions`
---
-ALTER TABLE `gapoptions`
-  ADD PRIMARY KEY (`GapOptionId`),
-  ADD KEY `GapId` (`GapId`),
-  ADD KEY `OptionOrder` (`OptionOrder`);
-
---
--- Indizes für die Tabelle `mcanswers`
---
-ALTER TABLE `mcanswers`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `IX_McAnswers_QuestionId` (`QuestionId`);
-
---
--- Indizes für die Tabelle `players`
---
-ALTER TABLE `players`
-  ADD PRIMARY KEY (`Id`);
-
---
--- Indizes für die Tabelle `questions`
---
-ALTER TABLE `questions`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `IX_Questions_QuestionSetId` (`QuestionSetId`);
-
---
--- Indizes für die Tabelle `questionsetprogresses`
---
-ALTER TABLE `questionsetprogresses`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `IX_QuestionSetProgresses_CharacterId` (`CharacterId`);
-
---
--- Indizes für die Tabelle `questionsets`
---
-ALTER TABLE `questionsets`
-  ADD PRIMARY KEY (`Id`),
-  ADD KEY `IX_QuestionSets_TeamId` (`TeamId`),
-  ADD KEY `IX_QuestionSets_ThemaId` (`ThemaId`);
-
---
--- Indizes für die Tabelle `teams`
---
-ALTER TABLE `teams`
-  ADD PRIMARY KEY (`Id`);
-
---
--- Indizes für die Tabelle `themen`
---
-ALTER TABLE `themen`
-  ADD PRIMARY KEY (`Id`);
-
---
--- Indizes für die Tabelle `__efmigrationshistory`
---
-ALTER TABLE `__efmigrationshistory`
-  ADD PRIMARY KEY (`MigrationId`);
-
---
--- AUTO_INCREMENT für exportierte Tabellen
---
-
---
--- AUTO_INCREMENT für Tabelle `character`
---
-ALTER TABLE `character`
-  MODIFY `CharacterID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT für Tabelle `gapfields`
---
-ALTER TABLE `gapfields`
-  MODIFY `GapId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1378;
-
---
--- AUTO_INCREMENT für Tabelle `gapoptions`
---
-ALTER TABLE `gapoptions`
-  MODIFY `GapOptionId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=448;
-
---
--- AUTO_INCREMENT für Tabelle `mcanswers`
---
-ALTER TABLE `mcanswers`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1896;
-
---
--- AUTO_INCREMENT für Tabelle `players`
---
-ALTER TABLE `players`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT für Tabelle `questions`
---
-ALTER TABLE `questions`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=615;
-
---
--- AUTO_INCREMENT für Tabelle `questionsetprogresses`
---
-ALTER TABLE `questionsetprogresses`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT für Tabelle `questionsets`
---
-ALTER TABLE `questionsets`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
-
---
--- AUTO_INCREMENT für Tabelle `teams`
---
-ALTER TABLE `teams`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
-
---
--- AUTO_INCREMENT für Tabelle `themen`
---
-ALTER TABLE `themen`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints der exportierten Tabellen

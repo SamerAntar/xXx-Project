@@ -27,13 +27,10 @@ Source: "xXx_lernspieldb.sql"; DestDir: "{app}"
 Source: "app.ico" ; DestDir: "{app}"
 Source: "readme.md" ; DestDir: "{app}"; Flags: isreadme
 
-[INI]
-Filename: "{app}\xXxSchulprojekt\appsettings.ini"; Section: "Environment"; Key: "Name"; String: "Production";
-
  
 [Icons] 
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\xXxSchulprojekt\Schulprojekt.exe"; WorkingDir: "{app}"; IconFilename:"{app}\app.ico"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\xXxSchulprojekt\Schulprojekt.exe"; WorkingDir: "{app}"; IconFilename:"{app}\app.ico"
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\xXxSchulprojekt\Schulprojekt.exe"; WorkingDir: "{app}\xXxSchulprojekt"; IconFilename:"{app}\app.ico"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\xXxSchulprojekt\Schulprojekt.exe"; WorkingDir: "{app}\xXxSchulprojekt"; IconFilename:"{app}\app.ico"
 [Run] 
 Filename: "{app}\xXxSchulprojekt\Schulprojekt.exe"; Description: "Starte Anwendung {#MyAppName}"; Flags: nowait postinstall
  
