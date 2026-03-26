@@ -1,8 +1,9 @@
 ﻿@page "/FinalResults"
-@page "/FinalResults/CharacterId={CharacterId:int}/SpielerID={SpielerId:int}/QuestionSetID={QuestionSetId:int}"
+@page "/FinalResults/CharacterId={CharacterId:int}/SpielerID={SpielerId:int}/QuestionSetID={QuestionSetId:int}/ThemaID={ThemaId:int}"
 @inject IQuestionSetService questionSetService
 @inject IQuestionSetProgressService QuestionSetProgressService
 @inject ICharacterService CharacterService
+@inject ISpielerService SpielerService
 @using Schulprojekt.Data
 @using Schulprojekt.Services
 @inject NavigationManager Navi
@@ -51,9 +52,11 @@
         <!-- CHART -->
         <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4">
             <RadzenHeading Size="H4">Performance Overview</RadzenHeading>
-
+            <RadzenText Style="width:100%; margin-top:10px; font-weight:bold; font-size: 25px">
+                So haben sie beim aktuellen Versuch abgeschnitten:
+            </RadzenText>
             <RadzenChart Style="height:350px;">
-                <RadzenColumnSeries Data="@QuestionSetProgressList"
+                        <RadzenColumnSeries Data="@CurrentQuestionSetProgressList"
                                     CategoryProperty="Topic"
                                     ValueProperty="Points" />
                 <RadzenCategoryAxis />
@@ -63,6 +66,9 @@
         <!-- DETAIL GRID -->
         <RadzenCard class="rz-shadow-4 rz-mt-4 rz-p-4">
             <RadzenHeading Size="H4">Detailed Results</RadzenHeading>
+            <RadzenText Style="width:100%; margin-top:10px; font-weight:bold; font-size: 25px">
+                So haben sie bisher insgesamt abgeschnitten:
+             </RadzenText>
             <RadzenDataGrid Data="@QuestionSetProgressList" TItem="QuestionSetProgress">
                 <Columns>
                     <RadzenDataGridColumn TItem="QuestionSetProgress" Property="Topic" Title="Topic" />
@@ -88,6 +94,7 @@
                             }
                         </Template>
                     </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="QuestionSetProgress" Property="CompletedAt" Title="Completed At" />
                 </Columns>
             </RadzenDataGrid>
         </RadzenCard>
@@ -122,6 +129,7 @@
 
     [Parameter] public int SpielerId { get; set; }
     [Parameter] public int QuestionSetId { get; set; }
+    [Parameter] public int ThemaId { get; set; }
     [Parameter] public int CharacterId { get; set; }
 
     private string EndscreenImage = "images/Endscreen_Normal/Endscreen_0_normal.png";
@@ -129,20 +137,22 @@
 
     List<QuestionSet> QuestionSetList = new();
     List<QuestionSetProgress> QuestionSetProgressList = new();
+    List<QuestionSetProgress> CurrentQuestionSetProgressList = new();
     Character? EndCharacter;
     Spieler? spieler;
 
 
+    string spielername = "Spieler ohne Name";
     double? totalPoints = 0;
     double? totalMax = 0;
     double percent = 0;
 
     string MotivationText => percent switch
     {
-        >= 90 => $"Hervorragende Leistung, {spieler?.Name ?? "Spieler"}! Sie haben ihre Top-IHKunter-Lizenz mehr als verdient.",
-        >= 75 => $"Gute Arbeit, {spieler?.Name ?? "Spieler"}! Damit haben Sie sogar ihre Profi-IHKunter-Lizenz erworben. ",
-        >= 50 => $"Glückwunsch zu ihrer normalen IHKunter-Lizenz, {spieler?.Name ?? "Spieler"}.",
-        _ => $"Glückwunsch zu ihrer normalen IHKunter-Lizenz, ABER übe weiter, {spieler?.Name ?? "Spieler"}!"
+        >= 90 => $"Hervorragende Leistung, {spielername}! Sie haben ihre Top-IHKunter-Lizenz mehr als verdient.",
+        >= 75 => $"Gute Arbeit, {spielername}! Damit haben Sie sogar ihre Profi-IHKunter-Lizenz erworben. ",
+        >= 50 => $"Glückwunsch zu ihrer normalen IHKunter-Lizenz, {spielername}.",
+        _ => $"Glückwunsch zu ihrer normalen IHKunter-Lizenz, ABER übe weiter, {spielername}!"
     };
 
     string IHKunterLicenceImagePath => percent switch
@@ -170,14 +180,20 @@
     /// <returns>A task that represents the asynchronous initialization operation.</returns>
     protected override async Task OnInitializedAsync()
     {
-        QuestionSetProgressList = (await QuestionSetProgressService.GetEntriesByPlayerId(SpielerId)).ToList();
+        spieler = await SpielerService.GetPlayerByIdAsync(SpielerId);
+        
+        spielername = string.IsNullOrWhiteSpace(spieler?.Name) ? "Spieler ohne Name" : spieler.Name;
+
+        QuestionSetProgressList = (await QuestionSetProgressService.GetEntriesByPlayerId(SpielerId)).Where(x => x.ThemaId == ThemaId).ToList();
+
+        CurrentQuestionSetProgressList = QuestionSetProgressList.GroupBy(x => x.QuestionSetId).Select(g => g.OrderByDescending(x => x.CompletedAt).First()).ToList();
 
         QuestionSetList = (await questionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(QuestionSetId)).ToList();
 
         EndCharacter = await CharacterService.GetEntryByKeyAsync(CharacterId);
 
-        totalPoints = QuestionSetProgressList.Sum(x => x.Points);
-        totalMax = QuestionSetProgressList.Sum(x => x.MaxPoints);
+        totalPoints = CurrentQuestionSetProgressList.Sum(x => x.Points);
+        totalMax = CurrentQuestionSetProgressList.Sum(x => x.MaxPoints);
         percent = totalMax == 0 ? 0 : (totalPoints ?? 0) / (totalMax ?? 1) * 100;
 
         LoadEndScreen();
@@ -191,7 +207,7 @@
     async void GoHome()
     {
         var confirmation = await DialogService.Confirm(
-          ($"Sie werden  als Spieler {spieler?.Name ?? "ohne Namen"} ausgeloggt und zurück zur Startseite umgeleitet. SInd sie sicher?"),
+          ($"Sie werden  als Spieler {spielername} ausgeloggt und zurück zur Startseite umgeleitet. Sind sie sicher?"),
           "Bestätigungsnachfrage", new ConfirmOptions { OkButtonText = ("Ja"), CancelButtonText = ("Nein") }) ?? false;
         if (confirmation)
         {
@@ -207,7 +223,7 @@
     async void GoMenu()
     {
         var confirmation = await DialogService.Confirm(
-                  ($"Sie werden zurück zum Spielmenü umgeleitet. Sie bleiben weiterhin als Spieler {spieler?.Name ?? "ohne Namen"} angemeldet"),
+                  ($"Sie werden zurück zum Spielmenü umgeleitet. Sie bleiben weiterhin als Spieler {spielername} angemeldet"),
                   "Bestätigungsnachfrage", new ConfirmOptions { OkButtonText = ("Ja"), CancelButtonText = ("Nein") }) ?? false;
         if(confirmation) {
             Navi.NavigateTo($"/MenuSeite/SpielerID={SpielerId}");

@@ -7,7 +7,7 @@
     <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
     <Compile Remove="LogicForUnittest\**" />
     <Content Remove="LogicForUnittest\**" />
     <EmbeddedResource Remove="LogicForUnittest\**" />

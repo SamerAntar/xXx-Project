@@ -4,7 +4,17 @@ using Schulprojekt.Components;
 using Schulprojekt.Data;
 using Schulprojekt.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+// When Debugging, use this ~Maxim 
+//var builder = WebApplication.CreateBuilder(args);
+
+// When Releasing, use this ~Maxim
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    EnvironmentName = Environments.Production
+});
+
+
 
 // Add SQL Server connection
 //builder.Services.AddDbContextFactory<ApplicationDbContext>(

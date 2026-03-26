@@ -60,6 +60,7 @@ namespace Schulprojekt.Services
 
                 return await dbContext.QuestionSetProgresses
                                         .Where(x => x.SpielerId == playerId)
+                                        .Include(x => x.Character)
                                         .ToListAsync();
             }
             catch (Exception)
