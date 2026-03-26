@@ -90,7 +90,7 @@
     {
         if (!quizStateService.IsInitialized)
         {
-            questionSets = (await questionSetService.GetAllEntriesIncludingNavigationsAsync()).ToList();
+            questionSets = (await questionSetService.GetEntriesByThemaKeyIncludingNavigationsAsync(ThemaId)).ToList();
 
             quizStateService.RemainingQuizIds = questionSets
                                                 .Where(q => q != null)
