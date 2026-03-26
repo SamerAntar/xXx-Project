@@ -45,7 +45,9 @@ namespace Schulprojekt.Services
             {
                 using var dbContext = await _contextFactory.CreateDbContextAsync();
 
-                return await dbContext.Character.FirstOrDefaultAsync(q => q.CharacterID == key);
+                return await dbContext.Character
+                    .Include(x => x.QuestionSetProgresses)
+                    .FirstOrDefaultAsync(q => q.CharacterID == key);
             }
             catch (Exception)
             {

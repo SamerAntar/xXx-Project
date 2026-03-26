@@ -57,5 +57,20 @@ namespace Schulprojekt.Services
                 throw;
             }
         }
+
+        public virtual async Task<Spieler?> GetPlayerByIdAsync(int key)
+        {
+            try
+            {
+                using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+                return await dbContext.Players
+                    .FirstOrDefaultAsync(q => q.Id == key);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 }
