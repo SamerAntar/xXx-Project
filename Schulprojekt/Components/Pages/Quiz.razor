@@ -92,7 +92,7 @@ else
             </RadzenStack>
         </Template>
     </RadzenDataList>
-    @if (QuestionsList != null && barValue == QuestionsList.Count() && (QuestionsList.All(x => x.selectedAnswer != null || (x.selectMultiAnswers != null && x.selectMultiAnswers.Count > 0) || (filledAnswersInGaps.Where(y => y.Key.QuestionId == x.Id).Count() == x.GapFields.Count()))) && !quizDone)
+    @if (QuestionsList != null && barValue == QuestionsList.Count()  && !quizDone)
     {
         <RadzenButton Variant="Variant.Flat" Text="Abgeben" Click="QuizAccomplisched" ButtonStyle="ButtonStyle.Success" />
     }
@@ -574,7 +574,7 @@ else
         }
 
         //also validates, if all gaps were answered
-        if (!answeredQuestions.Contains(question.Id) && filledGapsInQuestionWithStates.Where(x => x.Key.QuestionId == question.Id).Count() == question.GapFields.Count())
+        if (!answeredQuestions.Contains(question.Id) && filledGapsInQuestionWithStates.Where(x => x.Key.QuestionId == question.Id).Count() == question.GapFields.Count()/2)
         {
             barValue++;
             answeredQuestions.Add(question.Id);
